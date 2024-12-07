@@ -2,8 +2,8 @@ import pygame
 import random
 
 # Constantes
-GRID_SIZE = 8
-CELL_SIZE = 60
+GRID_SIZE = 17
+CELL_SIZE = 35
 WIDTH = GRID_SIZE * CELL_SIZE
 HEIGHT = GRID_SIZE * CELL_SIZE
 FPS = 30
@@ -44,7 +44,7 @@ class Unit:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, health, attack_power, team):
+    def __init__(self, x, y, health, attack_power, team, grid):
         """
         Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
 
@@ -67,12 +67,17 @@ class Unit:
         self.attack_power = attack_power
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
+        self.grid = grid  # La grille est maintenant un attribut de l'unité
 
     def move(self, dx, dy):
-        """Déplace l'unité de dx, dy."""
-        if 0 <= self.x + dx < GRID_SIZE and 0 <= self.y + dy < GRID_SIZE:
-            self.x += dx
-            self.y += dy
+        new_x = self.x + dx
+        new_y = self.y + dy
+
+        # Vérifier les limites et le type de terrain
+        if 0 <= new_x < WIDTH and 0 <= new_y < HEIGHT:
+            if self.grid[new_y][new_x] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
+                self.x = new_x
+                self.y = new_y
 
     def attack(self, target):
         """Attaque une unité cible."""
