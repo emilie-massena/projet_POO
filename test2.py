@@ -11,7 +11,7 @@ SCREEN_WIDTH = GRID_WIDTH * TILE_SIZE
 SCREEN_HEIGHT = GRID_HEIGHT * TILE_SIZE
 
 # Charger l'image de la grille
-grid_image = pygame.image.load(r"C:\Users\33758\Downloads\projet_POO\projet_POO\grille.png")
+grid_image = pygame.image.load(r"images\grille.png")
 grid_image = pygame.transform.scale(grid_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Grille logique (terrain)
