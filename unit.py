@@ -68,16 +68,14 @@ class Unit:
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
         self.grid = grid  # La grille est maintenant un attribut de l'unité
-
+        
     def move(self, dx, dy):
-        new_x = self.x + dx
-        new_y = self.y + dy
 
         # Vérifier les limites et le type de terrain
-        if 0 <= new_x < WIDTH and 0 <= new_y < HEIGHT:
-            if self.grid[new_y][new_x] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
-                self.x = new_x
-                self.y = new_y
+        if 0 <= self.x + dx < GRID_SIZE and 0 <= self.y + dy < GRID_SIZE:
+            if self.grid[self.y + dy][self.x + dx] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
+                self.x = self.x + dx
+                self.y = self.y + dy
 
     def attack(self, target):
         """Attaque une unité cible."""
