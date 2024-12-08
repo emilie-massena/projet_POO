@@ -98,6 +98,13 @@ class Unit:
 
     def draw(self, screen):
         """Affiche l'unité avec son image si elle est définie."""
+        # Définir la couleur de la case en fonction de l'équipe
+        case_color = BLUE if self.team == 'player' else RED
+
+        # Dessiner la case colorée derrière l'unité
+        pygame.draw.rect(screen, case_color, 
+                     (self.x * CELL_SIZE, self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+        
         if self.image:
             # Position centrée dans la case
             img_rect = self.image.get_rect(center=(
@@ -125,6 +132,7 @@ class Unit:
         # Barre de vie (fond en rouge, santé restante en vert)
         pygame.draw.rect(screen, RED, (bar_x, bar_y, bar_width, bar_height))  # Fond rouge
         pygame.draw.rect(screen, GREEN, (bar_x, bar_y, bar_current_width, bar_height))  # Santé verte
+        
 
     def get_attackable_cells(self):
         """Retourne une liste des cases que cette unité peut attaquer."""
@@ -150,7 +158,7 @@ class Archer(Unit):
         Crée un archer avec une portée d'attaque de 2 cases et une santé élevée.
         """
         image = pygame.image.load("images/archer.png").convert_alpha()  # Charge l'image
-        image = pygame.transform.scale(image, (CELL_SIZE, CELL_SIZE))  # Ajuste à la taille de la case
+        image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
         super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, attack_range=3, image=image)
         self.attack_types = [
             {"name": "Arrow Shot", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
@@ -163,7 +171,7 @@ class Swordsman(Unit):
         Crée un épeiste avec une portée d'attaque de 1 case et une santé faible.
         """
         image = pygame.image.load("images/swordsman.png").convert_alpha()  # Charge l'image
-        image = pygame.transform.scale(image, (CELL_SIZE, CELL_SIZE))  # Ajuste à la taille de la case
+        image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
         super().__init__(x, y, health=10, attack_power=3, team=team, grid=grid, attack_range=1, image=image)
         self.attack_types = [
             {"name": "Sword Slash", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
@@ -177,7 +185,7 @@ class Wizard (Unit):
        Crée un sorcier capable d'attaquer à un portée circulaire de 2 cases et de marcher sur l'eau.
        """
        image = pygame.image.load("images/wizard.png").convert_alpha()  # Charge l'image
-       image = pygame.transform.scale(image, (CELL_SIZE, CELL_SIZE))  # Ajuste à la taille de la case
+       image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
        super().__init__(x, y, health=12, attack_power=4, team=team, grid=grid, attack_range=2, image=image)
        
        # Attaques

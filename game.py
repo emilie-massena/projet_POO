@@ -70,7 +70,7 @@ class Game:
 
         self.enemy_units = [Archer(16, 16, 'enemy', grid), # Case (17,17)
                             Swordsman(15, 16, 'enemy', grid),# Case (17,16)
-                            Wizard(14, 16, 'player', grid)]  # Case(17,15)
+                            Wizard(14, 16, 'enemy', grid)]  # Case(17,15)
 
     def handle_player_turn(self):
         """Tour du joueur"""
