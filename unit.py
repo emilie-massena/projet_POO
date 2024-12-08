@@ -129,13 +129,19 @@ class Unit:
     def get_attackable_cells(self):
         """Retourne une liste des cases que cette unité peut attaquer."""
         cells=[]
-        if isinstance(self, Swordsman) or isinstance(self, Archer):
+        if isinstance(self, Swordsman) or isinstance(self, Archer): # Attaque sur direction cardinale
             for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  
                 for step in range(1, self.attack_range + 1): 
                     new_x = self.x + dx * step
                     new_y = self.y + dy * step
                     if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
                         cells.append((new_x, new_y))
+                        
+        elif isinstance(self, Wizard):  # Attaque sur direction circulaire 
+            distance = max(abs(dx), abs(dy))
+            if 1 <= distance <= self.attack_range:
+                cells.append((new_x, new_y))
+                
         return cells
 
 class Archer(Unit):
@@ -163,3 +169,52 @@ class Swordsman(Unit):
             {"name": "Sword Slash", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Heavy Strike", "power": self.attack_power * 2, "range": 1}  # Puissant mais petite portée
         ]
+
+
+class Wizard (Unit):
+    def __init__(self, x, y, team, grid):
+       """
+       Crée un sorcier capable d'attaquer à un portée circulaire de 2 cases et de marcher sur l'eau.
+       """
+       image = pygame.image.load("images/wizard.png").convert_alpha()  # Charge l'image
+       image = pygame.transform.scale(image, (CELL_SIZE, CELL_SIZE))  # Ajuste à la taille de la case
+       super().__init__(x, y, health=12, attack_power=4, team=team, grid=grid, attack_range=2, image=image)
+       
+       # Attaques
+       self.attack_types = [
+           {"name": "Gladio", "power": self.attack_power, "range": self.attack_range},  # Attaque normale
+           {"name": "Incendio", "power": self.attack_power * 2, "range": self.attack_range}  # Attaque puissante
+       ]
+
+    def move(self, dx, dy):
+       """Déplace le magicien de 2 cases ou 1, même sur l'eau."""
+       new_x = self.x + 2 * dx
+       new_y = self.y + 2 * dy
+       if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+           if self.grid[new_y][new_x] not in ["mur", "arbre"]:
+               self.x = new_x
+               self.y = new_y
+               return  
+
+        # Si un obstacle est rencontré, tenter de se déplacer d'une seule case
+       new_x = self.x + dx
+       new_y = self.y + dy
+       if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+           if self.grid[new_y][new_x] not in ["mur", "arbre"]:
+               self.x = new_x
+               self.y = new_y
+        
+
+    def heal(self):
+       """Ajoute 4 points de vie au magicien."""
+       self.health = min(self.max_health, self.health + 4)  # Santé maximale
+
+
+
+
+
+
+
+
+
+

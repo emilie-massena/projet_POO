@@ -1,6 +1,6 @@
 import pygame
 import random
-# Push Emi 07/12 16h45
+# Push Emi 08/12 16h30
 
 from unit import *
 from unit import Unit, Archer, Swordsman
@@ -65,10 +65,12 @@ class Game:
         """
         self.screen = screen
         self.player_units = [Archer(0, 0, 'player', grid), # Case (1,1)
-                             Swordsman(1, 0, 'player', grid)] # Case (1,2)
+                             Swordsman(1, 0, 'player', grid),# Case (1,2)
+                             Wizard(2, 0, 'player', grid)] # Case (1,3)
 
         self.enemy_units = [Archer(16, 16, 'enemy', grid), # Case (17,17)
-                            Swordsman(15, 16, 'enemy', grid)]  # Case (17,16)
+                            Swordsman(15, 16, 'enemy', grid),# Case (17,16)
+                            Wizard(14, 16, 'player', grid)]  # Case(17,15)
 
     def handle_player_turn(self):
         """Tour du joueur"""
@@ -127,6 +129,7 @@ class Game:
                                                 self.enemy_units.remove(enemy)
                                             has_acted = True
                                             break
+                                        
                             selected_unit.is_selected = False
                             
                         if event.key == pygame.K_s:
@@ -134,6 +137,12 @@ class Game:
                             selected_unit.is_selected = False  # Désélectionner l'unité
                             print("Tour du joueur passe son tour")
                             break  # Passe au tour suivant
+                            
+                        if event.key == pygame.K_l:  # Touche 'L' pour se soigner
+                            if isinstance(selected_unit, Wizard): # Pour l'unité Wizard
+                                selected_unit.heal()
+                                has_acted = True
+
 
     def handle_enemy_turn(self):
         """IA très simple pour les ennemis."""
