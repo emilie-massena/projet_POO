@@ -3,7 +3,7 @@ import random
 # Push Emi 07/12 16h45
 # Constantes
 GRID_SIZE = 17
-CELL_SIZE = 35
+CELL_SIZE = 45
 WIDTH = GRID_SIZE * CELL_SIZE
 HEIGHT = GRID_SIZE * CELL_SIZE
 FPS = 30
@@ -196,8 +196,8 @@ class Wizard (Unit):
 
     def move(self, dx, dy):
        """Déplace le magicien de 2 cases ou 1, même sur l'eau."""
-       new_x = self.x + 2 * dx
-       new_y = self.y + 2 * dy
+       new_x = self.x + dx
+       new_y = self.y + dy
        if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
            if self.grid[new_y][new_x] not in ["mur", "arbre"]:
                self.x = new_x
@@ -205,12 +205,12 @@ class Wizard (Unit):
                return  
 
         # Si un obstacle est rencontré, tenter de se déplacer d'une seule case
-       new_x = self.x + dx
-       new_y = self.y + dy
-       if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
-           if self.grid[new_y][new_x] not in ["mur", "arbre"]:
-               self.x = new_x
-               self.y = new_y
+       #new_x = self.x + dx
+       #new_y = self.y + dy
+       #if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+       #    if self.grid[new_y][new_x] not in ["mur", "arbre"]:
+       #        self.x = new_x
+       #        self.y = new_y
         
 
     def heal(self):

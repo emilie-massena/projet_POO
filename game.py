@@ -6,7 +6,7 @@ from unit import *
 from unit import Unit, Archer, Swordsman
 
 # Définir les constantes
-TILE_SIZE = 35  # Taille d'une case (en pixels)
+TILE_SIZE = 45  # Taille d'une case (en pixels)
 GRID_WIDTH = 17
 GRID_HEIGHT = 17
 SCREEN_WIDTH = GRID_WIDTH * TILE_SIZE
@@ -203,7 +203,7 @@ def main():
     pygame.init()
 
     # Instanciation de la fenêtre
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen = pygame.display.set_mode((SCREEN_WIDTH + 9*TILE_SIZE, SCREEN_HEIGHT))
     pygame.display.set_caption("Mon jeu avec grille PNG")
 
     # Instanciation du jeu
