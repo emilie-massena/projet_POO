@@ -5,7 +5,7 @@ import random
 from unit import *
 from unit import Unit, Archer, Swordsman
 
-#emilie 17h33
+#emilie 17h50
 
 # Définir les constantes
 TILE_SIZE = 45  # Taille d'une case (en pixels)
