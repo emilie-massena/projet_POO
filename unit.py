@@ -157,7 +157,7 @@ class Archer(Unit):
         """
         Crée un archer avec une portée d'attaque de 2 cases et une santé élevée.
         """
-        image = pygame.image.load("images/archer.png").convert_alpha()  # Charge l'image
+        image = pygame.image.load("images/archer.webp").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
         super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, attack_range=3, image=image)
         self.attack_types = [
