@@ -102,7 +102,7 @@ class Game:
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen = pygame.display.set_mode((SCREEN_WIDTH + 9*TILE_SIZE, SCREEN_HEIGHT))
     pygame.display.set_caption("Mon jeu avec grille PNG")
     game = Game(screen)
 
