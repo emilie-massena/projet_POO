@@ -1,5 +1,8 @@
 import pygame
 import random
+
+from abc import ABC, abstractmethod
+
 # Push Emi 07/12 16h45
 # Constantes
 GRID_SIZE = 17
@@ -84,7 +87,7 @@ class Unit:
             if self.grid[self.y + dy][self.x + dx] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
                 self.x = self.x + dx
                 self.y = self.y + dy
-
+    ##@abstractmethod
     def attack(self, target, attack_type=0):
         """Attaque une unité cible."""
         """Attaque une unité cible."""

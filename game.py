@@ -3,7 +3,6 @@ import random
 # Push Emi 08/12 16h30
 
 from unit import *
-from unit import Unit, Archer, Swordsman
 
 #emilie 17h33
 
@@ -196,6 +195,16 @@ class Game:
                     self.screen.blit(text, (10, y_offset))
                     y_offset += 30
         
+               
+        # Met en surbrillance les cases attaquables
+        for unit in self.player_units + self.enemy_units:
+            if unit.is_selected:
+                attackable_cells = unit.get_attackable_cells()
+                color = YELLOW if isinstance(unit, Archer) or isinstance(unit, Swordsman) else WHITE
+                for cell in attackable_cells:
+                    cell_rect = pygame.Rect(cell[0] * CELL_SIZE, cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                    pygame.draw.rect(self.screen, color, cell_rect)
+        
         # Rafraîchit l'écran
         pygame.display.flip()
 
@@ -205,7 +214,7 @@ def main():
     pygame.init()
 
     # Instanciation de la fenêtre
-    screen = pygame.display.set_mode((SCREEN_WIDTH + 9*TILE_SIZE, SCREEN_HEIGHT))
+    screen = pygame.display.set_mode((SCREEN_WIDTH + 16*TILE_SIZE, SCREEN_HEIGHT))
     pygame.display.set_caption("Mon jeu avec grille PNG")
 
     # Instanciation du jeu
