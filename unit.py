@@ -18,7 +18,7 @@ GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 
 
-class Unit:
+class Unit(ABC):
     """
     Classe pour représenter une unité.
 
@@ -87,7 +87,7 @@ class Unit:
             if self.grid[self.y + dy][self.x + dx] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
                 self.x = self.x + dx
                 self.y = self.y + dy
-    ##@abstractmethod
+    #@abstractmethod
     def attack(self, target, attack_type=0):
         """Attaque une unité cible."""
         """Attaque une unité cible."""
@@ -136,24 +136,10 @@ class Unit:
         pygame.draw.rect(screen, RED, (bar_x, bar_y, bar_width, bar_height))  # Fond rouge
         pygame.draw.rect(screen, GREEN, (bar_x, bar_y, bar_current_width, bar_height))  # Santé verte
         
-
+    @abstractmethod
     def get_attackable_cells(self):
         """Retourne une liste des cases que cette unité peut attaquer."""
-        cells=[]
-        if isinstance(self, Swordsman) or isinstance(self, Archer): # Attaque sur direction cardinale
-            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  
-                for step in range(1, self.attack_range + 1): 
-                    new_x = self.x + dx * step
-                    new_y = self.y + dy * step
-                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
-                        cells.append((new_x, new_y))
-                        
-        elif isinstance(self, Wizard):  # Attaque sur direction circulaire 
-            distance = max(abs(dx), abs(dy))
-            if 1 <= distance <= self.attack_range:
-                cells.append((new_x, new_y))
-                
-        return cells
+        pass
 
 class Archer(Unit):
     def __init__(self, x, y, team, grid):
@@ -167,6 +153,17 @@ class Archer(Unit):
             {"name": "Arrow Shot", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Power Arrow", "power": self.attack_power * 2, "range": 2}  # Spécial, portée réduite à 2 cases
         ]      
+
+    def get_attackable_cells(self):
+        """Retourne une liste des cases que cette unité peut attaquer."""
+        cells=[]
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  
+            for step in range(1, self.attack_range + 1): 
+                new_x = self.x + dx * step
+                new_y = self.y + dy * step
+                if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                    cells.append((new_x, new_y))
+        return cells
            
 class Swordsman(Unit):
     def __init__(self, x, y, team, grid):
@@ -180,6 +177,17 @@ class Swordsman(Unit):
             {"name": "Sword Slash", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Heavy Strike", "power": self.attack_power * 2, "range": 1}  # Puissant mais petite portée
         ]
+    def get_attackable_cells(self):
+        """Retourne une liste des cases que cette unité peut attaquer."""
+        cells=[]
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  
+            for step in range(1, self.attack_range + 1): 
+                new_x = self.x + dx * step
+                new_y = self.y + dy * step
+                if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                    cells.append((new_x, new_y))
+        return cells
+           
 
 
 class Wizard (Unit):
@@ -219,7 +227,47 @@ class Wizard (Unit):
     def heal(self):
        """Ajoute 4 points de vie au magicien."""
        self.health = min(self.max_health, self.health + 4)  # Santé maximale
+    
+    def get_attackable_cells(self):
+        #Retourne une liste des cases que cette unité peut attaquer.
+        cells = []
+        grid_size = len(self.grid)  # Taille de la grille
 
+        # Liste des décalages pour les cases attaquables
+        offsets = [
+            (0, -2), (0, -1), (0, 1), (0, 2),
+            (-1, -1), (-1, 0), (-1, 1),
+            (1, -1), (1, 0), (1, 1),
+            (-2, 0), (2, 0)
+        ]
+
+        for dx, dy in offsets:
+            new_x = self.x + dx
+            new_y = self.y + dy
+
+            # Vérifie si la case est valide (dans les limites de la grille)
+            if 0 <= new_x < grid_size and 0 <= new_y < grid_size:
+                cells.append((new_x, new_y))
+        
+        return cells
+
+    """
+        cells=[]
+        if isinstance(self, Swordsman) or isinstance(self, Archer): # Attaque sur direction cardinale
+            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  
+                for step in range(1, self.attack_range + 1): 
+                    new_x = self.x + dx * step
+                    new_y = self.y + dy * step
+                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                        cells.append((new_x, new_y))
+                        
+        elif isinstance(self, Wizard):  # Attaque sur direction circulaire 
+            distance = max(abs(dx), abs(dy))
+            if 1 <= distance <= self.attack_range:
+                cells.append((new_x, new_y))
+                
+        return cells
+        """
 
 
 

@@ -200,7 +200,7 @@ class Game:
         for unit in self.player_units + self.enemy_units:
             if unit.is_selected:
                 attackable_cells = unit.get_attackable_cells()
-                color = YELLOW if isinstance(unit, Archer) or isinstance(unit, Swordsman) else WHITE
+                color = YELLOW # if isinstance(unit, Archer) or isinstance(unit, Swordsman) else WHITE
                 for cell in attackable_cells:
                     cell_rect = pygame.Rect(cell[0] * CELL_SIZE, cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                     pygame.draw.rect(self.screen, color, cell_rect)
