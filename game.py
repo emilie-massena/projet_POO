@@ -208,7 +208,15 @@ class Game:
                 title_text = font.render(f"Unit: {unit.__class__.__name__}", True, YELLOW)
                 self.screen.blit(title_text, (SCREEN_WIDTH + 10, y_offset))
                 y_offset += 30
-             
+                
+                # Affiche les instructions de chaque unité
+                instruction_text = font.render("Instructions -> 'E' pour quitter  et  'S' pour sauter son tour", True, WHITE)
+                self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                y_offset += 30
+                if isinstance (unit, Wizard):
+                   instruction_text = font.render("Pouvoir spécial -> 'L' pour régénérer 4 PV", True, GREEN)
+                   self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                   y_offset += 30 
                 # Affiche les types d'attaques
                 for i, attack in enumerate(unit.attack_types):
                     text = font.render(f"{i + 1}. {attack['name']} (Power: {attack['power']}, Range: {attack['range']})",True,WHITE)
