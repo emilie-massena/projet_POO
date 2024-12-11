@@ -100,7 +100,7 @@ class Unit(ABC):
             target.health -= attack_power
 
     def draw(self, screen):
-        """Affiche l'unité avec son image si elle est définie."""
+        """Affiche l'unité avec son image"""
         # Définir la couleur de la case en fonction de l'équipe
         case_color = BLUE if self.team == 'player' else RED
 
@@ -115,11 +115,7 @@ class Unit(ABC):
                 self.y * CELL_SIZE + CELL_SIZE // 2
             ))
             screen.blit(self.image, img_rect)
-        else:    
-            """Affiche l'unité cercle sur l'écran."""
-            color = BLUE if self.team == 'player' else RED
-            pygame.draw.circle(screen, color, (self.x * CELL_SIZE + CELL_SIZE //2, 
-                                               self.y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
+
         
         # Dessiner la barre de vie
         max_health = self.max_health  # Valeur maximale de santé de l'unité
@@ -140,6 +136,11 @@ class Unit(ABC):
     def get_attackable_cells(self):
         """Retourne une liste des cases que cette unité peut attaquer."""
         pass
+
+    def is_on_healing_zone(self):
+        """Vérifie si l'unité se trouve sur une Healing zone."""
+        return self.grid[self.y][self.x] == "healing_zone"
+
 
 class Archer(Unit):
     def __init__(self, x, y, team, grid):
@@ -255,7 +256,7 @@ class Invincible(Unit):
             # Attaque sur une portée 1 case en direction circulaire et 3 cases sur une direction
             self.attack_types = [
                 {"name": "Big Slash", "power": self.attack_power, "range": self.attack_range},  # Attaque circulaire 1 case
-                {"name": "Two Blades Style", "power": self.attack_power, "range": 2} # Attaque circulaire 2 cases
+                {"name": "Two Blades Style", "power": self.attack_power*0.5, "range": 2} # Attaque circulaire 2 cases
             ]
             
     def get_attackable_cells(self):

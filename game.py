@@ -39,7 +39,6 @@ grid = [
 ]
 
 
-#test git pull
 class Game:
     """
     Classe pour représenter le jeu.
@@ -87,7 +86,8 @@ class Game:
             selected_attack_type = None # Variable qui mémorise le type d'attaque choisi
             
             while not has_acted:
-
+                # Mise à jour de l'affichage
+                self.flip_display()
                 # Important: cette boucle permet de gérer les événements Pygame
                 for event in pygame.event.get():
 
@@ -118,7 +118,13 @@ class Game:
                             dy = 1
 
                         selected_unit.move(dx, dy)
-                        self.flip_display()
+                        self.flip_display()  # Affiche la mise à jour après le déplacement
+                        
+                        if event.key == pygame.K_SPACE:  # Valider la position
+                            selected_unit.position_validated = True
+                            print("Position validée!")
+                            self.flip_display()  # Affiche les cases attaquables après validation
+
 
                         # Attaque (touche espace) met fin au tour
                         if event.key == pygame.K_SPACE and selected_attack_type is not None:
@@ -188,17 +194,26 @@ class Game:
         self.screen.blit(grid_image, (0, 0))  # Afficher l'image de la grille
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
-            
-        # Affiche les types d'attaques si une unité est sélectionnée
+        
+        
+        # Affiche le panneau d'information (partie noire à droite)
+        panel_rect = pygame.Rect(SCREEN_WIDTH, 0, 16 * TILE_SIZE, SCREEN_HEIGHT)
+        pygame.draw.rect(self.screen, (30, 30, 30), panel_rect)  # Fond du panneau en gris foncé
+        
+        # Si une unité est sélectionnée, affiche ses types d'attaques
         for unit in self.player_units:
             if unit.is_selected:
                 font = pygame.font.Font(None, 24)
-                y_offset = HEIGHT - 60  # Affiche en bas de l'écran
+                y_offset = 20  # Distance verticale de départ dans le panneau
+                title_text = font.render(f"Unit: {unit.__class__.__name__}", True, YELLOW)
+                self.screen.blit(title_text, (SCREEN_WIDTH + 10, y_offset))
+                y_offset += 30
+             
+                # Affiche les types d'attaques
                 for i, attack in enumerate(unit.attack_types):
-                    text = font.render(f"{i + 1}. {attack['name']} (Power: {attack['power']}, Range: {attack['range']})", True, WHITE)
-                    self.screen.blit(text, (10, y_offset))
-                    y_offset += 30
-        
+                    text = font.render(f"{i + 1}. {attack['name']} (Power: {attack['power']}, Range: {attack['range']})",True,WHITE)
+                    self.screen.blit(text, (SCREEN_WIDTH + 10, y_offset))
+                    y_offset += 30        
                
         # Met en surbrillance les cases attaquables
         for unit in self.player_units + self.enemy_units:
@@ -213,9 +228,10 @@ class Game:
                     cell_x, cell_y = cell
                     # Blit la surface semi-transparente sur l'écran
                     self.screen.blit(overlay, (cell_x * TILE_SIZE, cell_y * TILE_SIZE))
-                    # Rafraîchit l'écran
+                    
+        # Rafraîchit l'écran
         pygame.display.flip()
-
+      
 def main():
 
     # Initialisation de Pygame
@@ -227,6 +243,7 @@ def main():
 
     # Instanciation du jeu
     game = Game(screen)
+
 
     # Boucle principale du jeu
     while True:
