@@ -148,7 +148,7 @@ class Archer(Unit):
         """
         image = pygame.image.load("images/archer.png").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, attack_range=3, image=image)
+        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, attack_range=2, image=image)
         self.attack_types = [
             {"name": "Arrow Shot", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Power Arrow", "power": self.attack_power * 2, "range": 2}  # Spécial, portée réduite à 2 cases
@@ -214,14 +214,6 @@ class Wizard (Unit):
                self.x = new_x
                self.y = new_y
                return  
-
-        # Si un obstacle est rencontré, tenter de se déplacer d'une seule case
-       #new_x = self.x + dx
-       #new_y = self.y + dy
-       #if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
-       #    if self.grid[new_y][new_x] not in ["mur", "arbre"]:
-       #        self.x = new_x
-       #        self.y = new_y
         
 
     def heal(self):
@@ -251,29 +243,34 @@ class Wizard (Unit):
         
         return cells
 
-    """
-        cells=[]
-        if isinstance(self, Swordsman) or isinstance(self, Archer): # Attaque sur direction cardinale
-            for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  
-                for step in range(1, self.attack_range + 1): 
-                    new_x = self.x + dx * step
-                    new_y = self.y + dy * step
-                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+class Invincible(Unit):
+    def __init__(self, x, y, team, grid):
+            """
+            Crée une unité invincible qui ne perd pas de vie.
+            """
+            image = pygame.image.load("images/invincible.png").convert_alpha()  
+            image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  
+            super().__init__(x, y, health=40, attack_power=4, team=team, grid=grid, attack_range=1, image=image)
+            
+            # Attaque sur une portée 1 case en direction circulaire et 3 cases sur une direction
+            self.attack_types = [
+                {"name": "Big Slash", "power": self.attack_power, "range": self.attack_range},  # Attaque circulaire 1 case
+                {"name": "Two Blades Style", "power": self.attack_power, "range": 2} # Attaque circulaire 2 cases
+            ]
+            
+    def get_attackable_cells(self):
+            """
+            Retourne les cases attaquables selon le type d'attaque :
+            - attack_type 0 : Big Slash (circulaire).
+            - attack_type 1 : Two Blades Style ( circulaire).
+            """
+            cells = []
+
+            for dx in range(-1, 2):  # -1 à +1 pour couvrir les cases autour circulaire
+                for dy in range(-1, 2):
+                    new_x = self.x + dx
+                    new_y = self.y + dy
+                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:  # Vérifier les limites de la grille
                         cells.append((new_x, new_y))
-                        
-        elif isinstance(self, Wizard):  # Attaque sur direction circulaire 
-            distance = max(abs(dx), abs(dy))
-            if 1 <= distance <= self.attack_range:
-                cells.append((new_x, new_y))
-                
-        return cells
-        """
-
-
-
-
-
-
-
-
-
+                           
+            return cells

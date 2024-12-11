@@ -67,11 +67,13 @@ class Game:
         self.screen = screen
         self.player_units = [Archer(0, 0, 'player', grid), # Case (1,1)
                              Swordsman(1, 0, 'player', grid),# Case (1,2)
-                             Wizard(2, 0, 'player', grid)] # Case (1,3)
+                             Wizard(2, 0, 'player', grid), # Case (1,3)
+                             Invincible(0,1,'player', grid)] # Case (2,1)
 
         self.enemy_units = [Archer(16, 16, 'enemy', grid), # Case (17,17)
                             Swordsman(15, 16, 'enemy', grid),# Case (17,16)
-                            Wizard(14, 16, 'enemy', grid)]  # Case(17,15)
+                            Wizard(14, 16, 'enemy', grid),  # Case(17,15)
+                            Invincible(16,15,'enemy', grid)] # Case (16,17)
 
     def handle_player_turn(self):
         """Tour du joueur"""
@@ -143,6 +145,8 @@ class Game:
                             if isinstance(selected_unit, Wizard): # Pour l'unité Wizard
                                 selected_unit.heal()
                                 has_acted = True
+                                selected_unit.is_selected = False  # Désélectionner l'unité
+                                break
 
 
     def handle_enemy_turn(self):
@@ -200,12 +204,16 @@ class Game:
         for unit in self.player_units + self.enemy_units:
             if unit.is_selected:
                 attackable_cells = unit.get_attackable_cells()
-                color = YELLOW # if isinstance(unit, Archer) or isinstance(unit, Swordsman) else WHITE
+                
+                # Crée une surface semi-transparente
+                overlay = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                overlay.fill((0, 0, 255, 120)) # Transparence environ 50% 
+                
                 for cell in attackable_cells:
-                    cell_rect = pygame.Rect(cell[0] * CELL_SIZE, cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                    pygame.draw.rect(self.screen, color, cell_rect)
-        
-        # Rafraîchit l'écran
+                    cell_x, cell_y = cell
+                    # Blit la surface semi-transparente sur l'écran
+                    self.screen.blit(overlay, (cell_x * TILE_SIZE, cell_y * TILE_SIZE))
+                    # Rafraîchit l'écran
         pygame.display.flip()
 
 def main():
