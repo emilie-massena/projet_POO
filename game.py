@@ -67,12 +67,14 @@ class Game:
         self.player_units = [Archer(0, 0, 'player', grid), # Case (1,1)
                              Swordsman(1, 0, 'player', grid),# Case (1,2)
                              Wizard(2, 0, 'player', grid), # Case (1,3)
-                             Invincible(0,1,'player', grid)] # Case (2,1)
+                             Invincible(0,1,'player', grid), # Case (2,1)
+                             Bomber(1,1,'player',grid)] # Case (2,2)
 
         self.enemy_units = [Archer(16, 16, 'enemy', grid), # Case (17,17)
                             Swordsman(15, 16, 'enemy', grid),# Case (17,16)
                             Wizard(14, 16, 'enemy', grid),  # Case(17,15)
-                            Invincible(16,15,'enemy', grid)] # Case (16,17)
+                            Invincible(16,15,'enemy', grid), # Case (16,17)
+                            Bomber(15,15,'enemy',grid)] # Case (16,16)
 
     def handle_player_turn(self):
         """Tour du joueur"""
@@ -120,12 +122,7 @@ class Game:
                         selected_unit.move(dx, dy)
                         self.flip_display()  # Affiche la mise à jour après le déplacement
                         
-                        if event.key == pygame.K_SPACE:  # Valider la position
-                            selected_unit.position_validated = True
-                            print("Position validée!")
-                            self.flip_display()  # Affiche les cases attaquables après validation
-
-
+                        
                         # Attaque (touche espace) met fin au tour
                         if event.key == pygame.K_SPACE and selected_attack_type is not None:
                             for enemy in self.enemy_units:
@@ -180,15 +177,6 @@ class Game:
             for y in range(0, HEIGHT, CELL_SIZE):
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, WHITE, rect, 1)
-        """        
-        # Met en surbrillance les cases attaquables
-        for unit in self.player_units + self.enemy_units:
-            if unit.is_selected:
-                attackable_cells = unit.get_attackable_cells()
-                color = YELLOW if isinstance(unit, Archer) or isinstance(unit, Swordsman) else WHITE
-                for cell in attackable_cells:
-                    cell_rect = pygame.Rect(cell[0] * CELL_SIZE, cell[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                    pygame.draw.rect(self.screen, color, cell_rect)"""
 
         # Affiche les unités
         self.screen.blit(grid_image, (0, 0))  # Afficher l'image de la grille
@@ -213,10 +201,34 @@ class Game:
                 instruction_text = font.render("Instructions -> 'E' pour quitter  et  'S' pour sauter son tour", True, WHITE)
                 self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
                 y_offset += 30
-                if isinstance (unit, Wizard):
-                   instruction_text = font.render("Pouvoir spécial -> 'L' pour régénérer 4 PV", True, GREEN)
+                if isinstance (unit, Archer):
+                   instruction_text = font.render("Attaque normale et spéciale en direction cardinale sur 3 et 2 cases respectivement", True, WHITE)
                    self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
                    y_offset += 30 
+                   
+                if isinstance (unit, Swordsman):
+                    instruction_text = font.render("Attaque normale et spéciale en direction cardinale sur 1 case", True, WHITE)
+                    self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                    y_offset += 30  
+                    
+                if isinstance (unit, Wizard):
+                    instruction_text = font.render("Attaques normale et spéciale en direction dispersée", True, WHITE)
+                    self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                    y_offset += 30 
+                    power_text = font.render("Pouvoir spécial -> 'L' pour regénérer +4 PV", True, GREEN)
+                    self.screen.blit(power_text, (SCREEN_WIDTH + 10, y_offset))
+                    y_offset += 30
+                    
+                if isinstance (unit, Invincible):
+                    instruction_text = font.render("Attaque normale et spéciale en direction circulaire sur 1 case", True, WHITE)
+                    self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                    y_offset += 30
+                    
+                if isinstance (unit, Bomber):
+                    instruction_text = font.render("Attaque normale et spéciale sur une zone dispersée", True, WHITE)
+                    self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                    y_offset += 30                
+                   
                 # Affiche les types d'attaques
                 for i, attack in enumerate(unit.attack_types):
                     text = font.render(f"{i + 1}. {attack['name']} (Power: {attack['power']}, Range: {attack['range']})",True,WHITE)

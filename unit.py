@@ -266,12 +266,78 @@ class Invincible(Unit):
             - attack_type 1 : Two Blades Style ( circulaire).
             """
             cells = []
+            grid_size = len(self.grid)
 
-            for dx in range(-1, 2):  # -1 à +1 pour couvrir les cases autour circulaire
-                for dy in range(-1, 2):
-                    new_x = self.x + dx
-                    new_y = self.y + dy
-                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:  # Vérifier les limites de la grille
-                        cells.append((new_x, new_y))
-                           
+            offsets = [
+            (-1, -1),(-1, 0), (-1, 1),
+            (0, -1), (0, 1),
+            (1, -1),(1, 0), (1, 1)
+            ]
+            for dx, dy in offsets:
+                new_x = self.x + dx
+                new_y = self.y + dy
+
+                # Vérifie si la case est valide (dans les limites de la grille)
+                if 0 <= new_x < grid_size and 0 <= new_y < grid_size:
+                    cells.append((new_x, new_y))
             return cells
+
+class Bomber(Unit):
+    def __init__(self, x, y, team, grid):
+            """
+            Crée une unité bombardier qui lance des bombes.
+            """
+            image = pygame.image.load("images/bomber.png").convert_alpha()  
+            image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  
+            super().__init__(x, y, health=15, attack_power=5, team=team, grid=grid, attack_range=5, image=image)
+            
+            # Attaque sur une portée 5 cases dispersée
+            self.attack_types = [
+                {"name": "Aqua Bomb", "power": self.attack_power, "range": self.attack_range}, 
+                {"name": "Lava bomb", "power": self.attack_power*1.5, "range": 2} 
+            ]
+
+    def get_attackable_cells(self):
+        #Retourne une liste des cases que cette unité peut attaquer.
+        cells = []
+        grid_size = len(self.grid)  # Taille de la grille
+
+        # Liste des décalages pour les cases attaquables
+        offsets = [
+            (-5,-3),(-5,-2),(-5,-1),
+            (-4,-3),(-4,-2),(-4,-1),
+            (-3,-3),(-3,-2),(-3,-1),
+            
+            (5,3),(5,2),(5,1),
+            (4,3),(4,2),(4,1),
+            (3,3),(3,2),(3,1),
+            
+            (5,-3),(5,-2),(5,-1),
+            (4,-3),(4,-2),(4,-1),
+            (3,-3),(3,-2),(3,-1),
+            
+            (-5,3),(-5,2),(-5,1),
+            (-4,3),(-4,2),(-4,1),
+            (-3,3),(-3,2),(-3,1),
+ 
+            (-1,5),(-1,4),(-1,3),
+            (0,5),(0,4),(0,3),
+            (1,5),(1,4),(1,3),
+            
+            (-1,-5),(-1,-4),(-1,-3),
+            (0,-5),(0,-4),(0,-3),
+            (1,-5),(1,-4),(1,-3),            
+            
+        ]
+
+        for dx, dy in offsets:
+            new_x = self.x + dx
+            new_y = self.y + dy
+
+            # Vérifie si la case est valide (dans les limites de la grille)
+            if 0 <= new_x < grid_size and 0 <= new_y < grid_size:
+                cells.append((new_x, new_y))
+        
+        return cells
+
+
