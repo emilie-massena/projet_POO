@@ -3,7 +3,8 @@ import random
 
 from abc import ABC, abstractmethod
 
-# Push Emi 07/12 16h45
+# Push Emi 13/12 22h45
+
 # Constantes
 GRID_SIZE = 17
 CELL_SIZE = 45
@@ -76,7 +77,7 @@ class Unit(ABC):
         self.attack_range = attack_range
         self.attack_types = [
             {"name": "Basic Attack", "power": self.attack_power, "range": self.attack_range},   # Dictionnaire pour le nom des attaques, puissance et leur portée
-            {"name": "Special Attack", "power": self.attack_power * 2, "range": self.attack_range // 2}
+            {"name": "Special Attack", "power": self.attack_power, "range": self.attack_range}
             ]
         self.image = image  # Image associée à l'unité
         
@@ -87,9 +88,9 @@ class Unit(ABC):
             if self.grid[self.y + dy][self.x + dx] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
                 self.x = self.x + dx
                 self.y = self.y + dy
+                
     #@abstractmethod
     def attack(self, target, attack_type=0):
-        """Attaque une unité cible."""
         """Attaque une unité cible."""
         distance_x = abs(self.x - target.x)
         distance_y = abs(self.y - target.y)
@@ -121,7 +122,7 @@ class Unit(ABC):
         max_health = self.max_health  # Valeur maximale de santé de l'unité
         bar_width = CELL_SIZE - 10  # Largeur totale de la barre
         bar_height = 5  # Hauteur de la barre
-        health_ratio = self.health / max_health  # Proportion de santé restante
+        health_ratio = self.health / max_health  # ratio de santé restante
         
         # Calcul de la position et de la taille de la barre
         bar_x = self.x * CELL_SIZE + 5  # Décalage pour centrer la barre dans la case
@@ -137,59 +138,65 @@ class Unit(ABC):
         """Retourne une liste des cases que cette unité peut attaquer."""
         pass
 
-    def is_on_healing_zone(self):
-        """Vérifie si l'unité se trouve sur une Healing zone."""
-        return self.grid[self.y][self.x] == "healing_zone"
-
-
 class Archer(Unit):
     def __init__(self, x, y, team, grid):
         """
-        Crée un archer avec une portée d'attaque de 2 cases et une santé élevée.
+        Crée un archer avec 2 attaques de portées et puissances différentes 
         """
         image = pygame.image.load("images/archer.png").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, attack_range=2, image=image)
+        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, attack_range=3, image=image)
         self.attack_types = [
             {"name": "Arrow Shot", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
-            {"name": "Power Arrow", "power": self.attack_power * 2, "range": 2}  # Spécial, portée réduite à 2 cases
+            {"name": "Power Arrow", "power": self.attack_power * 2, "range": self.attack_range-1}  # Spécial, portée réduite à 2 cases
         ]      
 
-    def get_attackable_cells(self):
-        """Retourne une liste des cases que cette unité peut attaquer."""
-        cells=[]
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  
-            for step in range(1, self.attack_range + 1): 
-                new_x = self.x + dx * step
-                new_y = self.y + dy * step
+    def get_attackable_cells(self,attack_type=0):
+        """
+        Retourne une liste des cases en direction cardinale.
+        """
+       
+        cells = []
+        attack_range = self.attack_types[attack_type]["range"]
+        directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]  # Cardinal directions
+        
+        for dx, dy in directions:
+            for step in range(2, attack_range + 1):
+                new_x, new_y = self.x + dx * step, self.y + dy * step
                 if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
                     cells.append((new_x, new_y))
+
         return cells
            
 class Swordsman(Unit):
     def __init__(self, x, y, team, grid):
         """
-        Crée un épeiste avec une portée d'attaque de 1 case et une santé faible.
+        Crée un épeiste avec 2 attaques de portées et puissances différentes.
         """
         image = pygame.image.load("images/swordsman.png").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
         super().__init__(x, y, health=10, attack_power=3, team=team, grid=grid, attack_range=1, image=image)
         self.attack_types = [
             {"name": "Sword Slash", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
-            {"name": "Heavy Strike", "power": self.attack_power * 2, "range": 1}  # Puissant mais petite portée
+            {"name": "Heavy Strike", "power": self.attack_power * 2, "range": self.attack_range}  # Puissant mais petite portée
         ]
-    def get_attackable_cells(self):
-        """Retourne une liste des cases que cette unité peut attaquer."""
-        cells=[]
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  
-            for step in range(1, self.attack_range + 1): 
-                new_x = self.x + dx * step
-                new_y = self.y + dy * step
+        
+    def get_attackable_cells(self,attack_type=0):
+        """
+        Retourne une liste des cases en direction cardinale.
+        """
+    
+        cells = []
+        attack_range = self.attack_types[attack_type]["range"]
+        directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]  # Cardinal directions
+
+        for dx, dy in directions:
+            for step in range(1, attack_range + 1):
+                new_x, new_y = self.x + dx * step, self.y + dy * step
                 if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
                     cells.append((new_x, new_y))
-        return cells
-           
 
+        return cells
 
 class Wizard (Unit):
     def __init__(self, x, y, team, grid):
@@ -207,7 +214,7 @@ class Wizard (Unit):
        ]
 
     def move(self, dx, dy):
-       """Déplace le magicien de 2 cases ou 1, même sur l'eau."""
+       """Déplace le magicien sur l'eau."""
        new_x = self.x + dx
        new_y = self.y + dy
        if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
@@ -221,33 +228,28 @@ class Wizard (Unit):
        """Ajoute 4 points de vie au magicien."""
        self.health = min(self.max_health, self.health + 4)  # Santé maximale
     
-    def get_attackable_cells(self):
-        #Retourne une liste des cases que cette unité peut attaquer.
+    def get_attackable_cells(self,attack_type=0):
+        """
+        Retourne une liste des cases attaquables dispersées
+        """
         cells = []
-        grid_size = len(self.grid)  # Taille de la grille
+        attack_range = self.attack_types[attack_type]["range"]
 
-        # Liste des décalages pour les cases attaquables
-        offsets = [
-            (0, -2), (0, -1), (0, 1), (0, 2),
-            (-1, -1), (-1, 0), (-1, 1),
-            (1, -1), (1, 0), (1, 1),
-            (-2, 0), (2, 0)
-        ]
+        # Générer des cases dans la portée de l'attaque
+        for dx in range(-attack_range, attack_range + 1):
+            for dy in range(-attack_range, attack_range + 1):
+                new_x, new_y = self.x + dx, self.y + dy
+                if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                    # Filtrer selon le type d'attaque 
+                    if abs(dx) + abs(dy) <= attack_range:
+                        cells.append((new_x, new_y))
 
-        for dx, dy in offsets:
-            new_x = self.x + dx
-            new_y = self.y + dy
-
-            # Vérifie si la case est valide (dans les limites de la grille)
-            if 0 <= new_x < grid_size and 0 <= new_y < grid_size:
-                cells.append((new_x, new_y))
-        
         return cells
 
 class Invincible(Unit):
     def __init__(self, x, y, team, grid):
             """
-            Crée une unité invincible qui ne perd pas de vie.
+            Crée une unité invincible qui ne perd très peu de vie.
             """
             image = pygame.image.load("images/invincible.png").convert_alpha()  
             image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  
@@ -256,30 +258,25 @@ class Invincible(Unit):
             # Attaque sur une portée 1 case en direction circulaire et 3 cases sur une direction
             self.attack_types = [
                 {"name": "Big Slash", "power": self.attack_power, "range": self.attack_range},  # Attaque circulaire 1 case
-                {"name": "Two Blades Style", "power": self.attack_power*0.5, "range": 2} # Attaque circulaire 2 cases
+                {"name": "Two Blades Style", "power": self.attack_power*0.5, "range": self.attack_range*2} # Attaque circulaire 2 cases
             ]
             
-    def get_attackable_cells(self):
+    def get_attackable_cells(self,attack_type=0):
             """
-            Retourne les cases attaquables selon le type d'attaque :
-            - attack_type 0 : Big Slash (circulaire).
-            - attack_type 1 : Two Blades Style ( circulaire).
+            Retourne les cases attaquables direction circulaire
             """
             cells = []
-            grid_size = len(self.grid)
+            attack_range = self.attack_types[attack_type]["range"]
+            directions = [(0, -1), (0, 1), (-1, 0), (-1, -1), (1, 0), (1, -1), (1, 1), (-1, 1),
+                          (-2, -2), (-2,-1), (-2,0),(-2,1),(-2,2),
+                          (-1,-2),(-1,2),(0,-2),(0,2),(1,-2),(1,2),
+                          (2,-2),(2,-1),(2,0),(2,1),(2,2)]  
 
-            offsets = [
-            (-1, -1),(-1, 0), (-1, 1),
-            (0, -1), (0, 1),
-            (1, -1),(1, 0), (1, 1)
-            ]
-            for dx, dy in offsets:
-                new_x = self.x + dx
-                new_y = self.y + dy
+            for dx, dy in directions:
+                    new_x, new_y = self.x + dx, self.y + dy
+                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                        cells.append((new_x, new_y))
 
-                # Vérifie si la case est valide (dans les limites de la grille)
-                if 0 <= new_x < grid_size and 0 <= new_y < grid_size:
-                    cells.append((new_x, new_y))
             return cells
 
 class Bomber(Unit):
@@ -289,55 +286,29 @@ class Bomber(Unit):
             """
             image = pygame.image.load("images/bomber.png").convert_alpha()  
             image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  
-            super().__init__(x, y, health=15, attack_power=5, team=team, grid=grid, attack_range=5, image=image)
+            super().__init__(x, y, health=15, attack_power=5, team=team, grid=grid, attack_range=3, image=image)
             
             # Attaque sur une portée 5 cases dispersée
             self.attack_types = [
                 {"name": "Aqua Bomb", "power": self.attack_power, "range": self.attack_range}, 
-                {"name": "Lava bomb", "power": self.attack_power*1.5, "range": 2} 
+                {"name": "Lava bomb", "power": self.attack_power*1.5, "range": self.attack_range*2} 
             ]
 
-    def get_attackable_cells(self):
-        #Retourne une liste des cases que cette unité peut attaquer.
+    def get_attackable_cells(self,attack_type=0):
+        """
+        Retourne une liste des cases attaquables loin de l’unité.
+        """
         cells = []
-        grid_size = len(self.grid)  # Taille de la grille
+        attack_range = self.attack_types[attack_type]["range"]
+        min_distance = max(1, attack_range // 2)  # Exclure les cases proches
 
-        # Liste des décalages pour les cases attaquables
-        offsets = [
-            (-5,-3),(-5,-2),(-5,-1),
-            (-4,-3),(-4,-2),(-4,-1),
-            (-3,-3),(-3,-2),(-3,-1),
-            
-            (5,3),(5,2),(5,1),
-            (4,3),(4,2),(4,1),
-            (3,3),(3,2),(3,1),
-            
-            (5,-3),(5,-2),(5,-1),
-            (4,-3),(4,-2),(4,-1),
-            (3,-3),(3,-2),(3,-1),
-            
-            (-5,3),(-5,2),(-5,1),
-            (-4,3),(-4,2),(-4,1),
-            (-3,3),(-3,2),(-3,1),
- 
-            (-1,5),(-1,4),(-1,3),
-            (0,5),(0,4),(0,3),
-            (1,5),(1,4),(1,3),
-            
-            (-1,-5),(-1,-4),(-1,-3),
-            (0,-5),(0,-4),(0,-3),
-            (1,-5),(1,-4),(1,-3),            
-            
-        ]
+        for dx in range(-attack_range, attack_range + 1):
+            for dy in range(-attack_range, attack_range + 1):
+                distance = abs(dx) + abs(dy)
+                if min_distance <= distance <= attack_range:  # Garder les cases éloignées
+                    new_x, new_y = self.x + dx, self.y + dy
+                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                        cells.append((new_x, new_y))
 
-        for dx, dy in offsets:
-            new_x = self.x + dx
-            new_y = self.y + dy
-
-            # Vérifie si la case est valide (dans les limites de la grille)
-            if 0 <= new_x < grid_size and 0 <= new_y < grid_size:
-                cells.append((new_x, new_y))
-        
         return cells
-
 
