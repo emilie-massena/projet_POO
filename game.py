@@ -85,32 +85,104 @@ class Game:
         """
         Permet à un joueur de sélectionner ses unités.
         """
-        font = pygame.font.Font(None, 50)
+        font = pygame.font.Font(None, 30)
+        title_font = pygame.font.Font(None, 50)
+        small_font = pygame.font.Font(None, 24)
         clock = pygame.time.Clock()
 
-        # Liste des unités disponibles
-        all_units = [Archer(0, 0, player_name, grid),
-                     Swordsman(0, 0, player_name, grid),
-                     Wizard(0, 0, player_name, grid),
-                     Invincible(0, 0, player_name, grid),
-                     Bomber(0, 0, player_name, grid)]
+        # Liste des unités disponibles avec leurs caractéristiques
+        all_units = [
+            {
+                "class": Archer,
+                "name": "Archer",
+                "stats": "15 PV, Zone d'Effet : direction cardinale",
+                "attacks": [
+                    "1. Arrow Shot : -2PV sur une portée de 3 cases",
+                    "2. Power Arrow : -4PV sur une portée de 2 cases"
+                ],
+                "image": pygame.image.load(r"images/archer.png")
+            },
+            {
+                "class": Swordsman,
+                "name": "Swordsman",
+                "stats": "10 PV, Zone d'Effet : direction cardinale",
+                "attacks": [
+                    "1. Sword Slash : -3PV sur une portée de 1 case",
+                    "2. Heavy Strike : -6PV sur une portée de 1 case"
+                ],
+                "image": pygame.image.load(r"images/swordsman.png")
+            },
+            {
+                "class": Wizard,
+                "name": "Wizard",
+                "stats": "12 PV, Zone d'Effet : direction dispersée",
+                "attacks": [
+                    "1. Gladio : -4PV sur une portée de 2 cases",
+                    "2. Incendio : -8PV sur une portée de 2 cases",
+                    "'L' pour se régénérer 4PV (valider la position avant d'utiliser ce pouvoir)"
+                ],
+                "image": pygame.image.load(r"images/wizard.png")
+            },
+            {
+                "class": Invincible,
+                "name": "Invincible",
+                "stats": "40 PV, Zone d'Effet : direction circulaire",
+                "attacks": [
+                    "1. Big Slash : -4PV sur une portée de 1 case",
+                    "2. Two Blade Style : -6PV sur une portée de 2 cases"
+                ],
+                "image": pygame.image.load(r"images/invincible.png")
+            },
+            {
+                "class": Bomber,
+                "name": "Bomber",
+                "stats": "15 PV, Zone d'Effet : direction dispersée",
+                "attacks": [
+                    "1. Aqua bomb : -5PV sur une portée de 3 cases",
+                    "2. Lava bomb : -7.5PV sur une portée de 6 cases"
+                ],
+                "image": pygame.image.load(r"images/bomber.png")
+            }
+        ]
+
         selected_units = []
 
         while len(selected_units) < 3:
             self.screen.blit(self.background_image, (0, 0))  # Afficher l'image de fond
 
-            # Afficher les unités disponibles
-            title = font.render(f"{player_name}, choisissez vos unités", True, (255, 255, 255))
-            self.screen.blit(title, (1485 // 2 - title.get_width() // 2, 50))
+            # Afficher le titre
+            title = title_font.render(f"Equipe : {player_name}, choisissez vos unités", True, (255, 255, 255))
+            self.screen.blit(title, (1485 // 2 - title.get_width() // 2, 20))
 
+            # Afficher les unités disponibles
             for i, unit in enumerate(all_units):
-                color = (255, 255, 255) if unit not in selected_units else (100, 100, 100)
-                text = font.render(f"{i + 1}: {unit.__class__.__name__}", True, color)
-                self.screen.blit(text, (1485 // 2 - text.get_width() // 2, 150 + i * 50))
+                x_pos = 100 + i * 270
+                y_pos = 100
+
+                # Afficher le nom
+                name_text = font.render(f"{i + 1}. {unit['name']}", True, (255, 255, 255))
+                self.screen.blit(name_text, (x_pos, y_pos))
+
+                # Afficher l'image
+                unit_image = pygame.transform.scale(unit['image'], (100, 100))
+                self.screen.blit(unit_image, (x_pos, y_pos + 30))
+
+                # Afficher les stats avec gestion du texte long
+                stats_lines = self.wrap_text(unit['stats'], small_font, 250)
+                for j, line in enumerate(stats_lines):
+                    stats_text = small_font.render(line, True, (0, 0, 0))
+                    self.screen.blit(stats_text, (x_pos, y_pos + 140 + j * 20))
+
+                # Afficher les attaques avec gestion du texte long
+                for k, attack in enumerate(unit['attacks']):
+                    attack_lines = self.wrap_text(attack, small_font, 250)
+                    for l, line in enumerate(attack_lines):
+                        attack_text = small_font.render(line, True, (0, 0, 0))
+                        self.screen.blit(attack_text, (x_pos, y_pos + 160 + len(stats_lines) * 20 + k * 40 + l * 20))
 
             # Afficher les unités sélectionnées
-            selected_title = font.render(f"Unités sélectionnées : {len(selected_units)}/3", True, (0, 255, 0))
-            self.screen.blit(selected_title, (1485 // 2 - selected_title.get_width() // 2, 500))
+            selected_title = title_font.render(f"Unités sélectionnées : {len(selected_units)}/3", True, (255, 255, 255))
+            self.screen.blit(selected_title, (1485 // 2 - selected_title.get_width() // 2, 600))
 
             pygame.display.flip()
 
@@ -123,12 +195,38 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5]:
                         index = event.key - pygame.K_1
-                        if index < len(all_units) and all_units[index] not in selected_units:
-                            selected_units.append(all_units[index])
+                        if index < len(all_units) and all_units[index]['class'] not in [unit.__class__ for unit in selected_units]:
+                            unit_class = all_units[index]['class']
+                            selected_units.append(unit_class(0, 0, player_name, grid))
 
             clock.tick(30)
 
         return selected_units
+    
+    def wrap_text(self, text, font, max_width):
+        """
+        Découpe un texte en plusieurs lignes pour qu'il tienne dans une largeur donnée.
+        """
+        if not text:  # Vérifiez si le texte est vide ou None
+            return []
+
+        words = text.split(' ')
+        lines = []
+        current_line = ""
+
+        for word in words:
+            test_line = current_line + word + " "
+            if font.size(test_line)[0] <= max_width:
+                current_line = test_line
+            else:
+                lines.append(current_line.strip())
+                current_line = word + " "
+
+        if current_line:
+            lines.append(current_line.strip())
+
+        return lines
+
 
     def main_menu(self):
         pygame.init()
@@ -161,8 +259,8 @@ class Game:
                     elif event.key == pygame.K_RETURN:
                         if selected_option == 0:  # Start
                             # Sélection des unités
-                            self.player_units = self.select_units("player")
-                            self.enemy_units = self.select_units("enemy")
+                            self.player_units = self.select_units('player')
+                            self.enemy_units = self.select_units('enemy')
 
                             # Positionner les unités
                             self.player_units[0].x, self.player_units[0].y = 0, 0
