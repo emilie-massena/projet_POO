@@ -74,7 +74,91 @@ class Game:
                             Invincible(16,15,'enemy', grid), # Case (16,17)
                             Bomber(15,15,'enemy',grid)] # Case (16,16)
         
-                    
+        self.background_image = pygame.image.load(r"images/menu_background.png")  # Charger l'image de fond
+        self.background_image = pygame.transform.scale(self.background_image, (SCREEN_WIDTH + 16 * TILE_SIZE, SCREEN_HEIGHT))
+
+    def main_menu(self):
+        pygame.init()
+        font = pygame.font.Font(None, 74)
+        clock = pygame.time.Clock()
+
+        menu_options = ["Start", "Instructions", "Quit"]
+        selected_option = 0
+
+        while True:
+            self.screen.blit(self.background_image, (0, 0))  # Afficher l'image de fond
+
+            for i, option in enumerate(menu_options):
+                color = (255, 255, 255) if i == selected_option else (100, 100, 100)
+                text = font.render(option, True, color)
+                text_rect = text.get_rect(center=(1485 // 2, 765 // 3 + i * 80))
+                self.screen.blit(text, text_rect.topleft)
+
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        selected_option = (selected_option - 1) % len(menu_options)
+                    elif event.key == pygame.K_DOWN:
+                        selected_option = (selected_option + 1) % len(menu_options)
+                    elif event.key == pygame.K_RETURN:
+                        if selected_option == 0:  # Start
+                            return "start"
+                        elif selected_option == 1:  # Instructions
+                            self.show_instructions()
+                        elif selected_option == 2:  # Quit
+                            pygame.quit()
+                            exit()
+
+            clock.tick(30)
+
+    def show_instructions(self):
+        font = pygame.font.Font(None, 50)
+        clock = pygame.time.Clock()
+        instructions = [
+            "Welcome to the Game!",
+            "Instructions:",
+            "- Use arrow keys to navigate.",
+            "- Press Enter to select options.",
+            "- Enjoy the game!",
+            "Press ESC to return to the menu.",
+        ]
+
+        while True:
+            self.screen.blit(self.background_image, (0, 0))  # Afficher l'image de fond
+
+            for i, line in enumerate(instructions):
+                text = font.render(line, True, (255, 255, 255))
+                text_rect = text.get_rect(center=(1485 // 2, 765 // 4 + i * 40))
+                self.screen.blit(text, text_rect.topleft)
+
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    return
+
+            clock.tick(30)
+
+    def start_game(self):
+        while True:
+            if not self.player_units:
+                print("L'IA a gagné !")
+                break
+            elif not self.enemy_units:
+                print("Vous avez gagné !")
+                pygame.quit()
+                break
+            self.handle_player_turn()
+            self.handle_enemy_turn()
+
     def handle_player_turn(self):
         """Tour du joueur"""
         for selected_unit in self.player_units:
@@ -401,33 +485,28 @@ class Game:
            
         # Rafraîchit l'écran
         pygame.display.flip()
-      
+    
 def main():
-
-    # Initialisation de Pygame
     pygame.init()
 
+    # Charger et jouer la musique de fond
+    pygame.mixer.init()
+    pygame.mixer.music.load(r"sounds/sound_free_copyright.mp3")  # Remplacer par le chemin de votre fichier audio
+    pygame.mixer.music.play(-1)  # Lecture en boucle
+
     # Instanciation de la fenêtre
-    screen = pygame.display.set_mode((SCREEN_WIDTH + 16*TILE_SIZE, SCREEN_HEIGHT))
+    screen = pygame.display.set_mode((SCREEN_WIDTH + 16 * TILE_SIZE, SCREEN_HEIGHT))
     pygame.display.set_caption("Mon jeu avec grille PNG")
 
-    # Instanciation du jeu
+    # Création de l'instance du jeu
     game = Game(screen)
 
+    # Affichage du menu principal
+    menu_choice = game.main_menu()
 
-    # Boucle principale du jeu
-    while True:
-        if not game.player_units:
-            print("L'IA a gagné !")
-            break
-        elif not game.enemy_units:
-            print("Vous avez gagné !")
-            pygame.quit()
-            break
-        
-        game.handle_player_turn()
-        game.handle_enemy_turn()
-        
+    # Lancer le jeu si l'utilisateur choisit "Start"
+    if menu_choice == "start":
+        game.start_game()
 
 if __name__ == "__main__":
     main()
