@@ -117,23 +117,34 @@ class Game:
             clock.tick(30)
 
     def show_instructions(self):
-        font = pygame.font.Font(None, 50)
+        font = pygame.font.Font(None, 30)
         clock = pygame.time.Clock()
         instructions = [
-            "Welcome to the Game!",
+            "Bienvenue dans notre jeu!",
+            " ",
+            " ",
             "Instructions:",
-            "- Use arrow keys to navigate.",
-            "- Press Enter to select options.",
-            "- Enjoy the game!",
+            "- Le 1er joueur 'player' et le 2ème joueur 'enemy' possèdent chacun son équipe d'unités.",
+            "- Pour finir un tour, il faut utiliser toutes les unités de son équipe soit en jouant l'unité soit en sautant le tour de l'unité.",
+            "- ATTENTION : Il faudra obligatoirement valider sa position avec 'ESPACE' avant d'attaquer, sauter son tour ou encore quitter le jeu.",
+            "- Les instructions et directives correspondant à chaque unité sera rappeler sur la fenêtre d'informations lors du jeu.",
+            "--> L'objectif est d'éliminer toutes les unités de l'équipe adversaire",
+            " ",
+            "BONNE CHANCE !",
+            " ",
             "Press ESC to return to the menu.",
         ]
 
         while True:
             self.screen.blit(self.background_image, (0, 0))  # Afficher l'image de fond
 
+            # Calculer le point de départ vertical pour centrer toutes les lignes
+            total_text_height = len(instructions) * 40  # Hauteur totale du texte (40 pixels par ligne)
+            start_y = (765 - total_text_height) // 2  # Centrer verticalement dans l'écran de hauteur 765
+
             for i, line in enumerate(instructions):
                 text = font.render(line, True, (255, 255, 255))
-                text_rect = text.get_rect(center=(1485 // 2, 765 // 4 + i * 40))
+                text_rect = text.get_rect(center=(1485 // 2, start_y + i * 40))  # Centrer horizontalement et ajuster verticalement
                 self.screen.blit(text, text_rect.topleft)
 
             pygame.display.flip()
@@ -150,10 +161,10 @@ class Game:
     def start_game(self):
         while True:
             if not self.player_units:
-                print("L'IA a gagné !")
+                print("Le joueur 1 a gagné !")
                 break
             elif not self.enemy_units:
-                print("Vous avez gagné !")
+                print("Le joueur 2 a gagné !")
                 pygame.quit()
                 break
             self.handle_player_turn()
