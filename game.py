@@ -62,6 +62,9 @@ class Game:
             La surface de la fenêtre du jeu.
         """
         self.screen = screen
+        self.player_units = []
+        self.enemy_units = []
+        """
         self.player_units = [Archer(0, 0, 'player', grid), # Case (1,1)
                              Swordsman(1, 0, 'player', grid),# Case (1,2)
                              Wizard(2, 0, 'player', grid), # Case (1,3)
@@ -73,9 +76,59 @@ class Game:
                             Wizard(14, 16, 'enemy', grid),  # Case(17,15)
                             Invincible(16,15,'enemy', grid), # Case (16,17)
                             Bomber(15,15,'enemy',grid)] # Case (16,16)
+        """
         
         self.background_image = pygame.image.load(r"images/menu_background.png")  # Charger l'image de fond
         self.background_image = pygame.transform.scale(self.background_image, (SCREEN_WIDTH + 16 * TILE_SIZE, SCREEN_HEIGHT))
+    
+    def select_units(self, player_name):
+        """
+        Permet à un joueur de sélectionner ses unités.
+        """
+        font = pygame.font.Font(None, 50)
+        clock = pygame.time.Clock()
+
+        # Liste des unités disponibles
+        all_units = [Archer(0, 0, player_name, grid),
+                     Swordsman(0, 0, player_name, grid),
+                     Wizard(0, 0, player_name, grid),
+                     Invincible(0, 0, player_name, grid),
+                     Bomber(0, 0, player_name, grid)]
+        selected_units = []
+
+        while len(selected_units) < 3:
+            self.screen.blit(self.background_image, (0, 0))  # Afficher l'image de fond
+
+            # Afficher les unités disponibles
+            title = font.render(f"{player_name}, choisissez vos unités", True, (255, 255, 255))
+            self.screen.blit(title, (1485 // 2 - title.get_width() // 2, 50))
+
+            for i, unit in enumerate(all_units):
+                color = (255, 255, 255) if unit not in selected_units else (100, 100, 100)
+                text = font.render(f"{i + 1}: {unit.__class__.__name__}", True, color)
+                self.screen.blit(text, (1485 // 2 - text.get_width() // 2, 150 + i * 50))
+
+            # Afficher les unités sélectionnées
+            selected_title = font.render(f"Unités sélectionnées : {len(selected_units)}/3", True, (0, 255, 0))
+            self.screen.blit(selected_title, (1485 // 2 - selected_title.get_width() // 2, 500))
+
+            pygame.display.flip()
+
+            # Gestion des événements
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5]:
+                        index = event.key - pygame.K_1
+                        if index < len(all_units) and all_units[index] not in selected_units:
+                            selected_units.append(all_units[index])
+
+            clock.tick(30)
+
+        return selected_units
 
     def main_menu(self):
         pygame.init()
@@ -107,6 +160,19 @@ class Game:
                         selected_option = (selected_option + 1) % len(menu_options)
                     elif event.key == pygame.K_RETURN:
                         if selected_option == 0:  # Start
+                            # Sélection des unités
+                            self.player_units = self.select_units("player")
+                            self.enemy_units = self.select_units("enemy")
+
+                            # Positionner les unités
+                            self.player_units[0].x, self.player_units[0].y = 0, 0
+                            self.player_units[1].x, self.player_units[1].y = 1, 0
+                            self.player_units[2].x, self.player_units[2].y = 0, 1
+
+                            self.enemy_units[0].x, self.enemy_units[0].y = 16, 16
+                            self.enemy_units[1].x, self.enemy_units[1].y = 16, 15
+                            self.enemy_units[2].x, self.enemy_units[2].y = 15, 16
+
                             return "start"
                         elif selected_option == 1:  # Instructions
                             self.show_instructions()
@@ -115,6 +181,7 @@ class Game:
                             exit()
 
             clock.tick(30)
+
 
     def show_instructions(self):
         font = pygame.font.Font(None, 30)

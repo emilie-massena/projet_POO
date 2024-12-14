@@ -296,7 +296,7 @@ class Bomber(Unit):
 
     def get_attackable_cells(self,attack_type=0):
         """
-        Retourne une liste des cases attaquables loin de l’unité.
+        Retourne une liste des cases attaquables loin de l'unité.
         """
         cells = []
         attack_range = self.attack_types[attack_type]["range"]
