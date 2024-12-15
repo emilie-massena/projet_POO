@@ -133,7 +133,20 @@ class Unit(ABC):
         # Barre de vie (fond en rouge, santé restante en vert)
         pygame.draw.rect(screen, RED, (bar_x, bar_y, bar_width, bar_height))  # Fond rouge
         pygame.draw.rect(screen, GREEN, (bar_x, bar_y, bar_current_width, bar_height))  # Santé verte
-        
+    
+    def get_movable_cells(self):
+        """Retourne les cases accessibles en fonction de la vitesse de déplacement."""
+        cells = []
+        for dx in range(-self.movement_speed, self.movement_speed + 1):
+            for dy in range(-self.movement_speed, self.movement_speed + 1):
+                if abs(dx) + abs(dy) <= self.movement_speed:  # Respecte la vitesse de déplacement
+                    new_x, new_y = self.x + dx, self.y + dy
+                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                        if self.grid[new_y][new_x] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
+                            cells.append((new_x, new_y))
+        return cells
+
+
     @abstractmethod
     def get_attackable_cells(self):
         """Retourne une liste des cases que cette unité peut attaquer."""
@@ -169,7 +182,39 @@ class Archer(Unit):
                 else:
                     self.x, self.y = new_x_1, new_y_1  # S'arrête à la première case
         
-   
+    def get_movable_cells(self):
+        """Retourne les cases atteignables en fonction des mouvements possibles, avec vérification des cases intermédiaires."""
+        directions = [(0, -2), (0, 2), (-2, 0), (2, 0)]  # Déplacements de 2 cases
+        reachable_cells = {(self.x, self.y)}  # La case de départ est toujours atteignable
+
+        for _ in range(3):  # Simule jusqu'à 3 mouvements
+            new_cells = set()
+            for x, y in reachable_cells:
+                for dx, dy in directions:
+                    nx1, ny1 = x + dx // 2, y + dy // 2  # Première case intermédiaire
+                    nx2, ny2 = x + dx, y + dy  # Deuxième case finale
+
+                    # Vérifier la première case intermédiaire
+                    if (
+                        0 <= nx1 < GRID_SIZE and
+                        0 <= ny1 < GRID_SIZE and
+                        self.grid[ny1][nx1] not in ["mur", "arbre", "mer"]
+                    ):
+                        new_cells.add((nx1, ny1))  # Ajouter la case intermédiaire si valide
+
+                        # Vérifier la deuxième case finale
+                        if (
+                            0 <= nx2 < GRID_SIZE and
+                            0 <= ny2 < GRID_SIZE and
+                            self.grid[ny2][nx2] not in ["mur", "arbre", "mer"]
+                        ):
+                            new_cells.add((nx2, ny2))  # Ajouter la case finale si valide
+            reachable_cells.update(new_cells)  # Ajouter les nouvelles cases atteignables
+
+        return list(reachable_cells)
+
+
+    
     def get_attackable_cells(self,attack_type=0):
         """
         Retourne une liste des cases en direction cardinale.
@@ -303,7 +348,40 @@ class Invincible(Unit):
                         self.x, self.y = new_x_1, new_y_1  # S'arrête à la première case
                 else:
                     self.x, self.y = new_x_1, new_y_1  # S'arrête à la première case
-            
+    
+    def get_movable_cells(self):
+        """Retourne les cases atteignables en fonction des mouvements possibles, avec vérification des cases intermédiaires."""
+        directions = [(0, -2), (0, 2), (-2, 0), (2, 0)]  # Déplacements de 2 cases
+        reachable_cells = {(self.x, self.y)}  # La case de départ est toujours atteignable
+
+        for _ in range(3):  # Simule jusqu'à 3 mouvements
+            new_cells = set()
+            for x, y in reachable_cells:
+                for dx, dy in directions:
+                    nx1, ny1 = x + dx // 2, y + dy // 2  # Première case intermédiaire
+                    nx2, ny2 = x + dx, y + dy  # Deuxième case finale
+
+                    # Vérifier la première case intermédiaire
+                    if (
+                        0 <= nx1 < GRID_SIZE and
+                        0 <= ny1 < GRID_SIZE and
+                        self.grid[ny1][nx1] not in ["mur", "arbre", "mer"]
+                    ):
+                        new_cells.add((nx1, ny1))  # Ajouter la case intermédiaire si valide
+
+                        # Vérifier la deuxième case finale
+                        if (
+                            0 <= nx2 < GRID_SIZE and
+                            0 <= ny2 < GRID_SIZE and
+                            self.grid[ny2][nx2] not in ["mur", "arbre", "mer"]
+                        ):
+                            new_cells.add((nx2, ny2))  # Ajouter la case finale si valide
+            reachable_cells.update(new_cells)  # Ajouter les nouvelles cases atteignables
+
+        return list(reachable_cells)
+
+
+    
     def get_attackable_cells(self,attack_type=0):
             """
             Retourne les cases attaquables direction circulaire

@@ -346,10 +346,14 @@ class Game:
             has_validated_position = False
             has_attacked = False
             remaining_moves = selected_unit.movement_speed
-            
+            movable_cells = selected_unit.get_movable_cells()
+
             #while not has_validated_position:
             while remaining_moves > 0:
-                self.flip_display()
+
+                
+                self.flip_display(movable_cells=movable_cells)  # Affiche les cases atteignables
+
                 for event in pygame.event.get():
 
                     # Gestion de la fermeture de la fenêtre
@@ -458,12 +462,15 @@ class Game:
             has_validated_position = False
             has_attacked = False
             remaining_moves = selected_unit.movement_speed
-           
+            movable_cells = selected_unit.get_movable_cells()
+            
             #while not has_validated_position:
             while remaining_moves > 0:   
-                self.flip_display()
-                for event in pygame.event.get():
+                
+                self.flip_display(movable_cells=movable_cells)  # Affiche les cases atteignables
 
+
+                for event in pygame.event.get():
                     # Gestion de la fermeture de la fenêtre
                     if event.type == pygame.QUIT:
                         pygame.quit()
@@ -570,7 +577,7 @@ class Game:
                     target_units.remove(target)
 
          
-    def flip_display(self, normal_cells=None, special_cells=None, unit_team=None):
+    def flip_display(self, normal_cells=None, special_cells=None, movable_cells=None, unit_team=None):
         """Affiche le jeu."""
 
         # Affiche la grille
@@ -588,7 +595,14 @@ class Game:
         # Définir les couleurs en fonction de l'équipe
         normal_color = (0, 0, 255, 120) if unit_team == 'player' else (255, 0, 0, 120)  # Bleu ou Rouge
         special_color = (0, 0, 255, 130) if unit_team == 'player' else (255, 0, 0, 130)  # Teintes plus sombres
-        
+
+        # Affiche les cases atteignables pour les déplacements
+        if movable_cells:
+            for x, y in movable_cells:
+                overlay = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                overlay.fill((0, 255, 0, 100))  # Vert pour les déplacements
+                self.screen.blit(overlay, (x * TILE_SIZE, y * TILE_SIZE))
+            
         # Affiche les cases attaquables pour attaque normale
         if normal_cells:
             for x, y in normal_cells:
