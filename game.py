@@ -47,7 +47,7 @@ class Game:
         self.player_units = []
         self.enemy_units = []
        
-                # Chargement de l'image de fond
+        # Chargement de l'image de fond
         try:
             self.background_image = pygame.image.load(r"images/menu_background.png")
             self.background_image = pygame.transform.scale(self.background_image, ((self.size + 16) * TILE_SIZE, self.size * TILE_SIZE))
@@ -170,7 +170,7 @@ class Game:
                         index = event.key - pygame.K_1
                         if index < len(all_units) and all_units[index]['class'] not in [unit.__class__ for unit in selected_units]:
                             unit_class = all_units[index]['class']
-                            selected_units.append(unit_class(0, 0, player_name, self.grid))
+                            selected_units.append(unit_class(0, 0, player_name, self.grid,self.size))
 
             clock.tick(30)
 

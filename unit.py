@@ -160,7 +160,7 @@ class Archer(Unit):
         """
         image = pygame.image.load("images/archer.png").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, movement_speed=3, attack_range=3, image=image)
+        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, grid_size=grid_size, movement_speed=3, attack_range=3, image=image)
         self.attack_types = [
             {"name": "Arrow Shot", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Power Arrow", "power": self.attack_power * 2, "range": self.attack_range-1}  # Spécial, portée réduite à 2 cases
