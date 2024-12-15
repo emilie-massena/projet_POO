@@ -47,7 +47,7 @@ class Unit(ABC):
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, health, attack_power, team, grid, movement_speed=3, attack_range=1, image=None):
+    def __init__(self, x, y, health, attack_power, team, grid, movement_speed=3, attack_range=1, defense=0,image=None):
         """
         Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
 
@@ -73,6 +73,7 @@ class Unit(ABC):
         self.is_selected = False
         self.grid = grid  # La grille est maintenant un attribut de l'unité
         self.attack_range = attack_range
+        self.defense=defense
         self.attack_types = [
             {"name": "Basic Attack", "power": self.attack_power, "range": self.attack_range},   # Dictionnaire pour le nom des attaques, puissance et leur portée
             {"name": "Special Attack", "power": self.attack_power, "range": self.attack_range}
@@ -99,7 +100,8 @@ class Unit(ABC):
         attack_power = self.attack_types[attack_type]["power"]
 
         if distance_x <= attack_range and distance_y <= attack_range:
-            target.health -= attack_power
+            damage=max(0, attack_power-target.defense) #Minimum O damage
+            target.health -= damage
 
     def draw(self, screen):
         """Affiche l'unité avec son image"""
@@ -159,7 +161,7 @@ class Archer(Unit):
         """
         image = pygame.image.load("images/archer.png").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, movement_speed=3, attack_range=3, image=image)
+        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, movement_speed=3, attack_range=3, damage=1,image=image)
         self.attack_types = [
             {"name": "Arrow Shot", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Power Arrow", "power": self.attack_power * 2, "range": self.attack_range-1}  # Spécial, portée réduite à 2 cases
@@ -239,7 +241,7 @@ class Swordsman(Unit):
         """
         image = pygame.image.load("images/swordsman.png").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-        super().__init__(x, y, health=10, attack_power=3, team=team, grid=grid, movement_speed=3, attack_range=1, image=image)
+        super().__init__(x, y, health=10, attack_power=3, team=team, grid=grid, movement_speed=3, attack_range=1,defense=2, image=image)
         self.attack_types = [
             {"name": "Sword Slash", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Heavy Strike", "power": self.attack_power * 2, "range": self.attack_range}  # Puissant mais petite portée
@@ -276,7 +278,7 @@ class Wizard (Unit):
        """
        image = pygame.image.load("images/wizard.png").convert_alpha()  # Charge l'image
        image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-       super().__init__(x, y, health=12, attack_power=4, team=team, grid=grid,movement_speed=3, attack_range=2, image=image)
+       super().__init__(x, y, health=12, attack_power=4, team=team, grid=grid,movement_speed=3, attack_range=2,defense=2, image=image)
        
        # Attaques
        self.attack_types = [
@@ -324,7 +326,7 @@ class Invincible(Unit):
             """
             image = pygame.image.load("images/invincible.png").convert_alpha()  
             image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  
-            super().__init__(x, y, health=40, attack_power=4, team=team, grid=grid,movement_speed=3, attack_range=1, image=image)
+            super().__init__(x, y, health=40, attack_power=4, team=team, grid=grid,movement_speed=3, attack_range=1,defense=3, image=image)
             
             # Attaque sur une portée 1 case en direction circulaire et 3 cases sur une direction
             self.attack_types = [
@@ -407,7 +409,7 @@ class Bomber(Unit):
             """
             image = pygame.image.load("images/bomber.png").convert_alpha()  
             image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  
-            super().__init__(x, y, health=15, attack_power=5, team=team, grid=grid,movement_speed=3, attack_range=3, image=image)
+            super().__init__(x, y, health=15, attack_power=5, team=team, grid=grid,movement_speed=3, attack_range=3,defense=2, image=image)
             
             # Attaque sur une portée 5 cases dispersée
             self.attack_types = [

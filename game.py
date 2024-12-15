@@ -673,7 +673,12 @@ class Game:
                     text = font.render(f"{i + 1}. {attack['name']} (Power: {attack['power']}, Range: {attack['range']})",True,WHITE)
                     self.screen.blit(text, (SCREEN_WIDTH + 10, y_offset))
                     y_offset += 30 
-                    
+
+                defense_text=font.render(f"Défense:  {unit.defense}",True,WHITE)
+                self.screen.blit(defense_text, (SCREEN_WIDTH + 10, y_offset))
+                y_offset+=30
+
+
                 y_offset += 10
                 directive_text = font.render("Si aucun ennemi n'est sur une case attaquable, passer son tour 'S' ", True, YELLOW)
                 self.screen.blit(directive_text, (SCREEN_WIDTH + 10, y_offset))
