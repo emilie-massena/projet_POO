@@ -88,6 +88,8 @@ class Unit(ABC):
             if self.grid[self.y + dy][self.x + dx] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
                 self.x = self.x + dx
                 self.y = self.y + dy
+                if self.grid[self.y][self.x] in ["healing_zone"]:  
+                    self.health += 1  # Increment health 
                 
     #@abstractmethod
     def attack(self, target, attack_type=0):
