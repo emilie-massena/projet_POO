@@ -5,12 +5,12 @@ from unit import *
 
 # Définir les constantes
 TILE_SIZE = 45  # Taille d'une case (en pixels)
-GRID_WIDTH = 17
-GRID_HEIGHT = 17
-SCREEN_WIDTH = GRID_WIDTH * TILE_SIZE
-SCREEN_HEIGHT = GRID_HEIGHT * TILE_SIZE
+GRID_WIDTH = 17 # Largeur de la grille en nombre de cases
+GRID_HEIGHT = 17 # Hauteur de la grille en nombre de cases
+SCREEN_WIDTH = GRID_WIDTH * TILE_SIZE # Largeur de la fenêtre du jeu en pixels
+SCREEN_HEIGHT = GRID_HEIGHT * TILE_SIZE # Hauteur de la fenêtre du jeu en pixels
 
-# Charger l'image de la grille
+# Charger l'image de la grille et l'ajuster à la taille de l'écran
 grid_image = pygame.image.load(r"images\grille.png")
 grid_image = pygame.transform.scale(grid_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
@@ -40,16 +40,8 @@ class Game:
     """
     Classe pour représenter le jeu.
 
-    ...
-    Attributs
-    ---------
-    screen: pygame.Surface
-        La surface de la fenêtre du jeu.
-    player_units : list[Unit]
-        La liste des unités du joueur.
-    enemy_units : list[Unit]
-        La liste des unités de l'adversaire.
     """
+
 
     def __init__(self, screen):
         """
@@ -61,33 +53,30 @@ class Game:
             La surface de la fenêtre du jeu.
         """
         self.screen = screen
-        self.player_units = []
-        self.enemy_units = []
-        """
-        self.player_units = [Archer(0, 0, 'player', grid), # Case (1,1)
-                             Swordsman(1, 0, 'player', grid),# Case (1,2)
-                             Wizard(2, 0, 'player', grid), # Case (1,3)
-                             Invincible(0,1,'player', grid), # Case (2,1)
-                             Bomber(1,1,'player',grid)] # Case (2,2)
-
-        self.enemy_units = [Archer(16, 16, 'enemy', grid), # Case (17,17)
-                            Swordsman(15, 16, 'enemy', grid),# Case (17,16)
-                            Wizard(14, 16, 'enemy', grid),  # Case(17,15)
-                            Invincible(16,15,'enemy', grid), # Case (16,17)
-                            Bomber(15,15,'enemy',grid)] # Case (16,16)
-        """
-        
+        self.player_units = [] # Liste des unités du joueur
+        self.enemy_units = [] # Liste des unités de l'adversaire
+       
+        # Charger l'image de fond et l'ajuster à la taille de l'écran
         self.background_image = pygame.image.load(r"images/menu_background.png")  # Charger l'image de fond
         self.background_image = pygame.transform.scale(self.background_image, (SCREEN_WIDTH + 16 * TILE_SIZE, SCREEN_HEIGHT))
     
     def select_units(self, player_name):
         """
         Permet à un joueur de sélectionner ses unités.
+        Paramètres
+        ----------
+        player_name : str
+            Le nom du joueur (par exemple, 'player' ou 'enemy').
+
+        Retourne
+        -------
+        selected_units : list[Unit]
+            La liste des unités sélectionnées par le joueur.
         """
-        font = pygame.font.Font(None, 30)
-        title_font = pygame.font.Font(None, 50)
-        small_font = pygame.font.Font(None, 24)
-        clock = pygame.time.Clock()
+        font = pygame.font.Font(None, 30) # Police de taille 30 pour les textes standards
+        title_font = pygame.font.Font(None, 50) # Police de taille 50 pour les titres
+        small_font = pygame.font.Font(None, 24) # Police de taille 24 pour les petits textes
+        clock = pygame.time.Clock() # Horloge pour gérer le taux de rafraîchissement
 
         # Liste des unités disponibles avec leurs caractéristiques
         all_units = [
@@ -145,8 +134,9 @@ class Game:
             }
         ]
 
-        selected_units = []
+        selected_units = [] # Liste pour stocker les unités sélectionnées
 
+        # Boucle principale de sélection des unités
         while len(selected_units) < 3:
             self.screen.blit(self.background_image, (0, 0))  # Afficher l'image de fond
 
@@ -159,11 +149,11 @@ class Game:
                 x_pos = 100 + i * 270
                 y_pos = 100
 
-                # Afficher le nom
+                # Afficher le nom de l'unité
                 name_text = font.render(f"{i + 1}. {unit['name']}", True, (255, 255, 255))
                 self.screen.blit(name_text, (x_pos, y_pos))
 
-                # Afficher l'image
+                # Afficher l'image de l'unité
                 unit_image = pygame.transform.scale(unit['image'], (100, 100))
                 self.screen.blit(unit_image, (x_pos, y_pos + 30))
 
@@ -180,88 +170,119 @@ class Game:
                         attack_text = small_font.render(line, True, (0, 0, 0))
                         self.screen.blit(attack_text, (x_pos, y_pos + 160 + len(stats_lines) * 20 + k * 40 + l * 20))
 
-            # Afficher les unités sélectionnées
+            # Afficher le nombre d'unités déjà sélectionnées
             selected_title = title_font.render(f"Unités sélectionnées : {len(selected_units)}/3", True, (255, 255, 255))
             self.screen.blit(selected_title, (1485 // 2 - selected_title.get_width() // 2, 600))
 
-            pygame.display.flip()
+            pygame.display.flip()  # Mettre à jour l'affichage
 
-            # Gestion des événements
+            # Gestion des événements utilisateur
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
 
                 if event.type == pygame.KEYDOWN:
+                    # Vérifier si l'utilisateur appuie sur une touche correspondante à une unité
                     if event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5]:
-                        index = event.key - pygame.K_1
+                        index = event.key - pygame.K_1 # Calculer l'index de l'unité sélectionnée
+                        # Vérifier que l'index est valide et que l'unité n'est pas déjà sélectionnée
                         if index < len(all_units) and all_units[index]['class'] not in [unit.__class__ for unit in selected_units]:
                             unit_class = all_units[index]['class']
+                            # Ajouter l'unité sélectionnée à la liste
                             selected_units.append(unit_class(0, 0, player_name, grid))
 
-            clock.tick(30)
+            clock.tick(30) # 30 FPS
 
-        return selected_units
+        return selected_units # Retourner la liste des unités sélectionnées
     
     def wrap_text(self, text, font, max_width):
         """
         Découpe un texte en plusieurs lignes pour qu'il tienne dans une largeur donnée.
+        Paramètres
+        ----------
+        text : str
+            Le texte à découper.
+        font : pygame.font.Font
+            La police utilisée pour mesurer la largeur du texte.
+        max_width : int
+            La largeur maximale en pixels pour chaque ligne.
+
+        Retourne
+        -------
+        lines : list[str]
+            Liste des lignes découpées.
         """
         if not text:  # Vérifiez si le texte est vide ou None
             return []
 
-        words = text.split(' ')
-        lines = []
-        current_line = ""
+        words = text.split(' ')  # Diviser le texte en mots
+        lines = []               # Initialisation 
+        current_line = ""        # Initialisation 
 
         for word in words:
             test_line = current_line + word + " "
+            # Vérifier si la ligne testée dépasse la largeur maximale
             if font.size(test_line)[0] <= max_width:
                 current_line = test_line
             else:
-                lines.append(current_line.strip())
-                current_line = word + " "
+                lines.append(current_line.strip()) # Ajouter la ligne actuelle à la liste
+                current_line = word + " "  # Commencer une nouvelle ligne avec le mot actuel
 
         if current_line:
-            lines.append(current_line.strip())
+            lines.append(current_line.strip())  # Ajouter la dernière ligne restante
 
         return lines
 
     def main_menu(self):
+        """
+        Affiche le menu principal du jeu et gère les interactions utilisateur.
+
+        Retourne
+        -------
+        menu_choice : str
+            Le choix de l'utilisateur dans le menu ("start", "instructions", "quit").
+        """
         pygame.init()
-        font = pygame.font.Font(None, 74)
+        font = pygame.font.Font(None, 74) # Police de grande taille pour les options du menu
         clock = pygame.time.Clock()
 
-        menu_options = ["Start", "Instructions", "Quit"]
-        selected_option = 0
+        menu_options = ["Start", "Instructions", "Quit"]  # Options disponibles dans le menu
+        selected_option = 0 # Initialisation de l'option sélectionnée
 
         while True:
             self.screen.blit(self.background_image, (0, 0))  # Afficher l'image de fond
 
+            # Afficher les options du menu 
             for i, option in enumerate(menu_options):
+                # Mettre en évidence l'option sélectionnée
                 color = (255, 255, 255) if i == selected_option else (100, 100, 100)
                 text = font.render(option, True, color)
                 text_rect = text.get_rect(center=(1485 // 2, 765 // 3 + i * 80))
                 self.screen.blit(text, text_rect.topleft)
 
-            pygame.display.flip()
-
+            pygame.display.flip() # Mettre à jour l'affichage
+            
+            # Gestion des événements utilisateur
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
+                        # Déplacer la sélection vers le haut
                         selected_option = (selected_option - 1) % len(menu_options)
                     elif event.key == pygame.K_DOWN:
+                        # Déplacer la sélection vers le bas
                         selected_option = (selected_option + 1) % len(menu_options)
                     elif event.key == pygame.K_RETURN:
+                        # Sélectionner l'option choisie
                         if selected_option == 0:  # Start
-                            # Sélection des unités
+                            # Sélection des unités (le joueur et l'ennemi)
                             self.player_units = self.select_units('player')
                             self.enemy_units = self.select_units('enemy')
 
-                            # Positionner les unités
+                            # Positionner les unités sélectionnées sur la grille (le joueur et l'ennemi)
                             self.player_units[0].x, self.player_units[0].y = 0, 0
                             self.player_units[1].x, self.player_units[1].y = 1, 0
                             self.player_units[2].x, self.player_units[2].y = 0, 1
@@ -270,9 +291,9 @@ class Game:
                             self.enemy_units[1].x, self.enemy_units[1].y = 16, 15
                             self.enemy_units[2].x, self.enemy_units[2].y = 15, 16
 
-                            return "start"
+                            return "start" # Retourner "start" pour lancer le jeu
                         elif selected_option == 1:  # Instructions
-                            self.show_instructions()
+                            self.show_instructions() # Afficher les instructions du jeu
                         elif selected_option == 2:  # Quit
                             pygame.quit()
                             exit()
@@ -280,7 +301,10 @@ class Game:
             clock.tick(30)
 
     def show_instructions(self):
-        font = pygame.font.Font(None, 30)
+        """
+        Affiche les instructions du jeu et attend que l'utilisateur appuie sur ESC pour revenir au menu.
+        """
+        font = pygame.font.Font(None, 30) # Police de taille 30 
         clock = pygame.time.Clock()
         instructions = [
             "Bienvenue dans notre jeu!",
@@ -305,33 +329,44 @@ class Game:
             total_text_height = len(instructions) * 40  # Hauteur totale du texte (40 pixels par ligne)
             start_y = (765 - total_text_height) // 2  # Centrer verticalement dans l'écran de hauteur 765
 
+            # Afficher chaque ligne d'instruction
             for i, line in enumerate(instructions):
                 text = font.render(line, True, (255, 255, 255))
                 text_rect = text.get_rect(center=(1485 // 2, start_y + i * 40))  # Centrer horizontalement et ajuster verticalement
                 self.screen.blit(text, text_rect.topleft)
 
-            pygame.display.flip()
+            pygame.display.flip() # Mettre à jour l'affichage
 
+            # Gestion des événements utilisateur
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    return
+                    return # Retourner au menu principal
 
             clock.tick(30)
 
     def start_game(self):
+        """
+        Démarre la boucle principale du jeu où les tours sont gérés.
+        """
         while True:
+            # Vérifier les conditions de victoire
             if not self.player_units:
-                print("Le joueur 1 a gagné !")
+                print("Le joueur 1 a gagné !") # Si le joueur n'a plus d'unités, l'adversaire gagne
                 break
+                
             elif not self.enemy_units:
-                print("Le joueur 2 a gagné !")
+                print("Le joueur 2 a gagné !") # # Si le joueur n'a plus d'unités, l'adversaire gagne
+            
                 pygame.quit()
                 break
-            self.handle_player_turn()
-            self.handle_enemy_turn()
+
+
+
+            self.handle_player_turn() # Gérer le tour du joueur
+            self.handle_enemy_turn() # Gérer le tour de l'ennemi
 
     def handle_player_turn(self):
         """Tour du joueur"""
@@ -344,10 +379,10 @@ class Game:
             selected_attack_type = None # Variable qui mémorise le type d'attaque choisi
             has_validated_position = False
             has_attacked = False
-            remaining_moves = selected_unit.movement_speed
-            movable_cells = selected_unit.get_movable_cells()
+            remaining_moves = selected_unit.movement_speed # Nombre de déplacements restants
+            movable_cells = selected_unit.get_movable_cells()  # Cases où l'unité peut se déplacer
 
-            #while not has_validated_position:
+            # Boucle pour gérer les déplacements de l'unité
             while remaining_moves > 0:
 
                 
@@ -366,7 +401,7 @@ class Game:
                             pygame.quit()
                             exit()
                                                         
-                        # Déplacement (touches fléchées)
+                        # Déplacement avec les touches fléchées
                         dx, dy = 0, 0
                         if event.key == pygame.K_LEFT:
                             dx = -1
@@ -376,33 +411,34 @@ class Game:
                             dy = -1
                         elif event.key == pygame.K_DOWN:
                             dy = 1
-                            
+
+                        # Déplacer l'unité si une direction est pressée    
                         if dx != 0 or dy != 0:
                             selected_unit.move(dx, dy)
                             remaining_moves -= 1
                             print(f"Déplacements restants : {remaining_moves}")
 
                         if event.key == pygame.K_SPACE:
-                            remaining_moves = 0    
+                            remaining_moves = 0    # Valider la position actuelle
                         
-                        #selected_unit.move(dx, dy)
+                      
                         self.flip_display()
                         
                         # Valider la position avec "Espace"
                         if event.key == pygame.K_SPACE:
                             has_validated_position = True
-                            break
+                            break # Sortir de la boucle de déplacement
 
             # Une fois la position validée, afficher les cases attaquables
             attackable_cells = selected_unit.get_attackable_cells()
             while not has_attacked:
                 self.flip_display()
 
-               # Obtenez les cases attaquables
+               # Obtenir les cases attaquables pour les attaques normales et spécialess
                 normal_cells = selected_unit.get_attackable_cells(attack_type=0)
                 special_cells = selected_unit.get_attackable_cells(attack_type=1)
                  
-                # Affichez les portées
+                # Afficher les portées des attaques
                 self.flip_display(normal_cells, special_cells, unit_team='player')
 
                 for event in pygame.event.get():
@@ -447,10 +483,11 @@ class Game:
                                     has_attacked = True  # Terminer le tour après guérison
                                     selected_unit.is_selected = False
             
-            selected_unit.is_selected = False
+            selected_unit.is_selected = False  # Désélectionner l'unité
                                             
     def handle_enemy_turn(self):
-        
+         #Gère le tour de l'ennemi de manière similaire au tour du joueur.
+         
         for selected_unit in self.enemy_units:
 
             # Tant que l'unité n'a pas terminé son tour
@@ -567,15 +604,41 @@ class Game:
             selected_unit.is_selected = False
 
     def execute_attack(self, unit, attackable_cells, target_units, attack_type):
-        """Exécute une attaque d'une unité sur les ennemis dans les cases attaquables."""
+        """
+        Exécute une attaque d'une unité sur les ennemis dans les cases attaquables.
+
+        Paramètres
+        ----------
+        unit : Unit
+            L'unité qui attaque.
+        attackable_cells : list[tuple]
+            Liste des coordonnées des cases attaquables.
+        target_units : list[Unit]
+            Liste des unités cibles possibles.
+        attack_type : int
+            Type d'attaque (0 pour normale, 1 pour spéciale).
+        """
         for target in target_units:
             if (target.x, target.y) in attackable_cells:
-                unit.attack(target, attack_type)
+                unit.attack(target, attack_type) # Effectuer l'attaque
                 if target.health <= 0:
-                    target_units.remove(target)
+                    target_units.remove(target)  # Retirer l'unité si sa santé est épuisée
     
     def flip_display(self, normal_cells=None, special_cells=None, movable_cells=None, unit_team=None):
-        """Affiche le jeu."""
+        """
+        Met à jour l'affichage du jeu en fonction des paramètres fournis.
+
+        Paramètres
+        ----------
+        normal_cells : list[tuple], optional
+            Liste des cases attaquables pour l'attaque normale.
+        special_cells : list[tuple], optional
+            Liste des cases attaquables pour l'attaque spéciale.
+        movable_cells : list[tuple], optional
+            Liste des cases où l'unité peut se déplacer.
+        unit_team : str, optional
+            Équipe de l'unité ('player' ou 'enemy') pour déterminer les couleurs des attaques.
+        """
 
         # Affiche la grille
         self.screen.fill(BLACK)
@@ -692,8 +755,8 @@ class Game:
                 self.screen.blit(remarque2_text, (SCREEN_WIDTH + 10, y_offset))
                 y_offset += 40
            
-        # Rafraîchit l'écran
-        pygame.display.flip()
+        
+        pygame.display.flip() # Rafraîchit l'écran
     
 def main():
     pygame.init()
@@ -701,11 +764,11 @@ def main():
     # Charger et jouer la musique de fond
     pygame.mixer.init()
     pygame.mixer.music.load(r"sounds/sound_free_copyright.mp3")  # Remplacer par le chemin de votre fichier audio
-    pygame.mixer.music.play(-1)  # Lecture en boucle
+    pygame.mixer.music.play(-1)  # Lecture en boucle infinie
 
     # Instanciation de la fenêtre
     screen = pygame.display.set_mode((SCREEN_WIDTH + 16 * TILE_SIZE, SCREEN_HEIGHT))
-    pygame.display.set_caption("Mon jeu avec grille PNG")
+    pygame.display.set_caption("Mon jeu avec grille PNG") # Titre de la fenêtre
 
     # Création de l'instance du jeu
     game = Game(screen)
@@ -717,5 +780,6 @@ def main():
     if menu_choice == "start":
         game.start_game()
 
+# Point d'entrée principal du programme
 if __name__ == "__main__":
     main()
