@@ -2,38 +2,18 @@ import pygame
 import random
  
 from unit import *
+from grid import Grill
 
-# Définir les constantes
+
+# Définition des constantes
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+YELLOW = (255, 255, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+
 TILE_SIZE = 45  # Taille d'une case (en pixels)
-GRID_WIDTH = 17
-GRID_HEIGHT = 17
-SCREEN_WIDTH = GRID_WIDTH * TILE_SIZE
-SCREEN_HEIGHT = GRID_HEIGHT * TILE_SIZE
-
-# Charger l'image de la grille
-grid_image = pygame.image.load(r"images\grille.png")
-grid_image = pygame.transform.scale(grid_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
-
-# Grille logique (terrain)
-grid = [
-    ["passage_vert"] * 13 + ["arbre", "mur", "healing_zone", "passage_vert"],
-    ["passage_vert"] * 13 + ["arbre", "mur", "passage_vert", "passage_vert"],
-    ["passage_vert"] * 3 + ["mur", "arbre"] + ["passage_vert"] * 8 + ["arbre", "mur", "mur", "passage_vert"],
-    ["mur"] * 4 + ["arbre"] + ["passage_vert"] * 4 + ["mer"] + ["passage_vert"] * 3 + ["arbre"] * 3 + ["passage_vert"],
-    ["arbre"] * 5 + ["passage_vert"] * 4 + ["mer"] * 2 + ["passage_vert"] * 6,
-    ["passage_vert"] * 17,
-    ["passage_vert"] * 6 + ["arbre"] * 4 + ["passage_vert"] * 7,
-    ["passage_vert"] * 2 + ["arbre"] + ["passage_vert"] * 3 + ["arbre", "mer", "mer", "arbre"] + ["passage_vert"] * 6 + ["mer"],
-    ["passage_vert"] * 2 + ["arbre"] + ["passage_vert"] * 4 + ["mer", "mer", "arbre"] + ["passage_vert"] * 5 + ["mer"] + ["healing_zone"],
-    ["arbre"] * 3 + ["passage_vert"] * 3 + ["arbre", "mer", "arbre", "arbre"] + ["passage_vert"] * 4 + ["mer"] + ["passage_vert"] * 2,
-    ["passage_vert"] * 6 + ["arbre"] + ["passage_vert"] * 6 + ["mer"] + ["passage_vert"] * 3,
-    ["passage_vert"] * 17,
-    ["passage_vert"] * 2 + ["mur"] * 2 + ["passage_vert"] * 8 + ["arbre"] * 5,
-    ["arbre"] + ["passage_vert"] * 2 + ["mur"] + ["passage_vert"] * 8 + ["arbre"] + ["mur"] * 4,
-    ["arbre"] * 2 + ["passage_vert"] * 10 + ["arbre"] + ["mur"] + ["passage_vert"] * 3,
-    ["passage_vert"] * 3 + ["mur"] + ["passage_vert"] * 4 + ["mer"] + ["passage_vert"] * 8,
-    ["passage_vert"] * 2 + ["healing_zone"] + ["mur"] + ["passage_vert"] * 3 + ["mer"] * 3 + ["passage_vert"] * 7
-]
+CELL_SIZE = 45 
 
 
 class Game:
@@ -51,7 +31,7 @@ class Game:
         La liste des unités de l'adversaire.
     """
 
-    def __init__(self, screen):
+    def __init__(self, screen, grid, image, size):
         """
         Construit le jeu avec la surface de la fenêtre.
 
@@ -60,25 +40,19 @@ class Game:
         screen : pygame.Surface
             La surface de la fenêtre du jeu.
         """
+        self.grid = grid
+        self.image = image
+        self.size = size
         self.screen = screen
         self.player_units = []
         self.enemy_units = []
-        """
-        self.player_units = [Archer(0, 0, 'player', grid), # Case (1,1)
-                             Swordsman(1, 0, 'player', grid),# Case (1,2)
-                             Wizard(2, 0, 'player', grid), # Case (1,3)
-                             Invincible(0,1,'player', grid), # Case (2,1)
-                             Bomber(1,1,'player',grid)] # Case (2,2)
-
-        self.enemy_units = [Archer(16, 16, 'enemy', grid), # Case (17,17)
-                            Swordsman(15, 16, 'enemy', grid),# Case (17,16)
-                            Wizard(14, 16, 'enemy', grid),  # Case(17,15)
-                            Invincible(16,15,'enemy', grid), # Case (16,17)
-                            Bomber(15,15,'enemy',grid)] # Case (16,16)
-        """
-        
-        self.background_image = pygame.image.load(r"images/menu_background.png")  # Charger l'image de fond
-        self.background_image = pygame.transform.scale(self.background_image, (SCREEN_WIDTH + 16 * TILE_SIZE, SCREEN_HEIGHT))
+       
+                # Chargement de l'image de fond
+        try:
+            self.background_image = pygame.image.load(r"images/menu_background.png")
+            self.background_image = pygame.transform.scale(self.background_image, ((self.size + 16) * TILE_SIZE, self.size * TILE_SIZE))
+        except pygame.error as e:
+            raise FileNotFoundError(f"Erreur lors du chargement de l'image de fond : {e}")
     
     def select_units(self, player_name):
         """
@@ -196,7 +170,7 @@ class Game:
                         index = event.key - pygame.K_1
                         if index < len(all_units) and all_units[index]['class'] not in [unit.__class__ for unit in selected_units]:
                             unit_class = all_units[index]['class']
-                            selected_units.append(unit_class(0, 0, player_name, grid))
+                            selected_units.append(unit_class(0, 0, player_name, self.grid))
 
             clock.tick(30)
 
@@ -582,13 +556,13 @@ class Game:
 
         # Affiche la grille
         self.screen.fill(BLACK)
-        for x in range(0, WIDTH, CELL_SIZE):
-            for y in range(0, HEIGHT, CELL_SIZE):
+        for x in range(0, self.size*CELL_SIZE, CELL_SIZE):
+            for y in range(0, self.size*CELL_SIZE, CELL_SIZE):
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, WHITE, rect, 1)
 
         # Affiche les unités
-        self.screen.blit(grid_image, (0, 0))  # Afficher l'image de la grille
+        self.screen.blit(self.image, (0, 0))  # Afficher l'image de la grille
         for unit in self.player_units + self.enemy_units:
             unit.draw(self.screen)
                     
@@ -618,7 +592,7 @@ class Game:
                 self.screen.blit(overlay, (x * TILE_SIZE, y * TILE_SIZE))
                
         # Affiche le panneau d'information (partie noire à droite)
-        panel_rect = pygame.Rect(SCREEN_WIDTH, 0, 16 * TILE_SIZE, SCREEN_HEIGHT)
+        panel_rect = pygame.Rect(self.size*CELL_SIZE, 0, 16 * TILE_SIZE, self.size*CELL_SIZE)
         pygame.draw.rect(self.screen, (30, 30, 30), panel_rect)  # Fond du panneau en gris foncé
    
         
@@ -628,97 +602,128 @@ class Game:
                 font = pygame.font.Font(None, 24)
                 y_offset = 20  # Distance verticale de départ dans le panneau
                 title_text = font.render(f"Unit: {unit.__class__.__name__}", True, YELLOW)
-                self.screen.blit(title_text, (SCREEN_WIDTH + 10, y_offset))
+                self.screen.blit(title_text, (self.size*CELL_SIZE+ 10, y_offset))
                 y_offset += 40
                 
                 # Affiche les instructions de chaque unité
                 directive_text = font.render("Instructions -> Valider sa position avec 'ESPACE' pour voir la portée des attaques de l'unité", True, WHITE)
-                self.screen.blit(directive_text, (SCREEN_WIDTH + 10, y_offset))
+                self.screen.blit(directive_text, (self.size*CELL_SIZE + 10, y_offset))
                 y_offset += 30
                 
                 directive2_text = font.render("Instructions -> Pensez à valider avec 'ESPACE' avant de faire quoique ce soit !", True, WHITE)
-                self.screen.blit(directive2_text, (SCREEN_WIDTH + 10, y_offset))
+                self.screen.blit(directive2_text, (self.size*CELL_SIZE + 10, y_offset))
                 y_offset += 30 
                 
                 if isinstance (unit, Archer):
                    instruction_text = font.render("Attaque normale et spéciale en direction cardinale sur 3 et 2 cases respectivement", True, WHITE)
-                   self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                   self.screen.blit(instruction_text, (self.size*CELL_SIZE+ 10, y_offset))
                    y_offset += 40 
                    
                 if isinstance (unit, Swordsman):
                     instruction_text = font.render("Attaque normale et spéciale en direction cardinale sur 1 case", True, WHITE)
-                    self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                    self.screen.blit(instruction_text, (self.size*CELL_SIZE + 10, y_offset))
                     y_offset += 40  
                     
                 if isinstance (unit, Wizard):
                     instruction_text = font.render("Attaques normale et spéciale en direction dispersée", True, WHITE)
-                    self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                    self.screen.blit(instruction_text, (self.size*CELL_SIZE + 10, y_offset))
                     y_offset += 40 
                     power_text = font.render("Pouvoir spécial -> 'L' pour regénérer +4 PV", True, GREEN)
-                    self.screen.blit(power_text, (SCREEN_WIDTH + 10, y_offset))
+                    self.screen.blit(power_text, (self.size*CELL_SIZE + 10, y_offset))
                     y_offset += 40
                     
                 if isinstance (unit, Invincible):
                     instruction_text = font.render("Attaque normale et spéciale en direction circulaire sur 1 case", True, WHITE)
-                    self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                    self.screen.blit(instruction_text, (self.size*CELL_SIZE + 10, y_offset))
                     y_offset += 40
                     
                 if isinstance (unit, Bomber):
                     instruction_text = font.render("Attaque normale et spéciale sur une zone dispersée", True, WHITE)
-                    self.screen.blit(instruction_text, (SCREEN_WIDTH + 10, y_offset))
+                    self.screen.blit(instruction_text, (self.size*CELL_SIZE+ 10, y_offset))
                     y_offset += 40                
                    
                 # Affiche les types d'attaques
                 for i, attack in enumerate(unit.attack_types):
                     text = font.render(f"{i + 1}. {attack['name']} (Power: {attack['power']}, Range: {attack['range']})",True,WHITE)
-                    self.screen.blit(text, (SCREEN_WIDTH + 10, y_offset))
+                    self.screen.blit(text, (self.size*CELL_SIZE + 10, y_offset))
                     y_offset += 30 
 
                 defense_text=font.render(f"Défense:  {unit.defense}",True,WHITE)
-                self.screen.blit(defense_text, (SCREEN_WIDTH + 10, y_offset))
+                self.screen.blit(defense_text, (self.size*CELL_SIZE + 10, y_offset))
                 y_offset+=30
 
 
                 y_offset += 10
                 directive_text = font.render("Si aucun ennemi n'est sur une case attaquable, passer son tour 'S' ", True, YELLOW)
-                self.screen.blit(directive_text, (SCREEN_WIDTH + 10, y_offset))
+                self.screen.blit(directive_text, (self.size*CELL_SIZE + 10, y_offset))
                 y_offset += 40  
                 
                 option_text = font.render("'S' pour sauter son tour et 'E' pour quitter le jeu", True, RED)
-                self.screen.blit(option_text, (SCREEN_WIDTH + 10, y_offset))
+                self.screen.blit(option_text, (self.size*CELL_SIZE + 10, y_offset))
                 y_offset += 50
                 
                 remarque_text = font.render("Il est possible de quitter le jeu avant d'avoir valider sa position", True, RED)
                 remarque2_text = font.render("En revanche après validation de sa position, il faudra sauter son tour avant de quitter",True, RED)
-                self.screen.blit(remarque_text, (SCREEN_WIDTH + 10, y_offset))
+                self.screen.blit(remarque_text, (self.size*CELL_SIZE + 10, y_offset))
                 y_offset += 30
-                self.screen.blit(remarque2_text, (SCREEN_WIDTH + 10, y_offset))
+                self.screen.blit(remarque2_text, (self.size*CELL_SIZE + 10, y_offset))
                 y_offset += 40
            
         # Rafraîchit l'écran
         pygame.display.flip()
     
 def main():
+    """
+    Point d'entrée principal du jeu.
+    """
     pygame.init()
 
-    # Charger et jouer la musique de fond
-    pygame.mixer.init()
-    pygame.mixer.music.load(r"sounds/sound_free_copyright.mp3")  # Remplacer par le chemin de votre fichier audio
-    pygame.mixer.music.play(-1)  # Lecture en boucle
+    try:
+        pygame.mixer.init()
+        pygame.mixer.music.load(r"sounds/sound_free_copyright.mp3")
+        pygame.mixer.music.play(-1)
+    except pygame.error:
+        print("Erreur lors du chargement de la musique.")
 
-    # Instanciation de la fenêtre
-    screen = pygame.display.set_mode((SCREEN_WIDTH + 16 * TILE_SIZE, SCREEN_HEIGHT))
+    # Initialisation de l'écran
+    screen = pygame.display.set_mode((17 * TILE_SIZE + 16 * TILE_SIZE, 17 * TILE_SIZE))
     pygame.display.set_caption("Mon jeu avec grille PNG")
 
-    # Création de l'instance du jeu
-    game = Game(screen)
+    # Création d'une instance du jeu (temporaire pour accéder au menu)
+    game = Game(screen, None, None, 17)
 
     # Affichage du menu principal
     menu_choice = game.main_menu()
 
-    # Lancer le jeu si l'utilisateur choisit "Start"
-    if menu_choice == "start":
+    if menu_choice == "Start":
+        print("Lancement du jeu!")
+        # Affichage du menu pour choisir le monde
+        monde = game.select_monde()
+        if monde is None:
+            print("Aucun monde sélectionné, retour au menu principal.")
+            return
+
+        # Affichage du menu pour choisir la taille
+        taille = game.select_taille()
+        if taille is None:
+            print("Aucune taille sélectionnée, retour au menu principal.")
+            return
+
+        print(f"Monde sélectionné : {monde}, Taille sélectionnée : {taille}")
+
+        # Création de la grille en fonction des choix
+        grille = Grill(monde_type=monde, taille=taille)
+
+        # Re-création de l'instance du jeu avec la grille sélectionnée
+        game = Game(screen, grille.grid, grille.image, grille.size)
+
+        # Démarrer la partie
         game.start_game()
+
+    elif menu_choice == "Instructions":
+        game.show_instructions()
+    elif menu_choice == "Quit" or menu_choice is None:
+        pygame.quit()
 
 if __name__ == "__main__":
     main()
