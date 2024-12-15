@@ -88,7 +88,7 @@ class Unit(ABC):
             if self.grid[self.y + dy][self.x + dx] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
                 self.x = self.x + dx
                 self.y = self.y + dy
-                if self.grid[self.y][self.x] in ["healing_zone"]:  
+                if self.grid[self.y][self.x] in ["healing_zone"] and self.health < self.max_health:  
                     self.health += 1  # Increment health 
                 
     #@abstractmethod
