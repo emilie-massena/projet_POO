@@ -4,10 +4,10 @@ import random
 from abc import ABC, abstractmethod
 
 # Constantes
-GRID_SIZE = 17
+#GRID_SIZE = 17
 CELL_SIZE = 45
-WIDTH = GRID_SIZE * CELL_SIZE
-HEIGHT = GRID_SIZE * CELL_SIZE
+#WIDTH = GRID_SIZE * CELL_SIZE
+#HEIGHT = GRID_SIZE * CELL_SIZE
 FPS = 30
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -47,7 +47,7 @@ class Unit(ABC):
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, health, attack_power, team, grid, movement_speed=3, attack_range=1, defense=0,image=None):
+    def __init__(self, x, y, health, attack_power, team, grid, grid_size, movement_speed=3, attack_range=1, image=None):
         """
         Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
 
@@ -72,8 +72,8 @@ class Unit(ABC):
         self.team = team  # 'player' ou 'enemy'
         self.is_selected = False
         self.grid = grid  # La grille est maintenant un attribut de l'unité
+        self.grid_size = grid_size
         self.attack_range = attack_range
-        self.defense=defense
         self.attack_types = [
             {"name": "Basic Attack", "power": self.attack_power, "range": self.attack_range},   # Dictionnaire pour le nom des attaques, puissance et leur portée
             {"name": "Special Attack", "power": self.attack_power, "range": self.attack_range}
@@ -84,7 +84,7 @@ class Unit(ABC):
     def move(self, dx, dy):
         """Déplace l'unité de dx, dy."""
         # Vérifier les limites et le type de terrain
-        if 0 <= self.x + dx < GRID_SIZE and 0 <= self.y + dy < GRID_SIZE:
+        if 0 <= self.x + dx < self.grid_size and 0 <= self.y + dy < self.grid_size:
             if self.grid[self.y + dy][self.x + dx] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
                 self.x = self.x + dx
                 self.y = self.y + dy
@@ -100,8 +100,7 @@ class Unit(ABC):
         attack_power = self.attack_types[attack_type]["power"]
 
         if distance_x <= attack_range and distance_y <= attack_range:
-            damage=max(0, attack_power-target.defense) #Minimum O damage
-            target.health -= damage
+            target.health -= attack_power
 
     def draw(self, screen):
         """Affiche l'unité avec son image"""
@@ -143,7 +142,7 @@ class Unit(ABC):
             for dy in range(-self.movement_speed, self.movement_speed + 1):
                 if abs(dx) + abs(dy) <= self.movement_speed:  # Respecte la vitesse de déplacement
                     new_x, new_y = self.x + dx, self.y + dy
-                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                    if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size:
                         if self.grid[new_y][new_x] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
                             cells.append((new_x, new_y))
         return cells
@@ -155,13 +154,13 @@ class Unit(ABC):
         pass
 
 class Archer(Unit):
-    def __init__(self, x, y, team, grid):
+    def __init__(self, x, y, team, grid, grid_size):
         """
         Crée un archer avec 2 attaques de portées et puissances différentes 
         """
         image = pygame.image.load("images/archer.png").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, movement_speed=3, attack_range=3, damage=1,image=image)
+        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, movement_speed=3, attack_range=3, image=image)
         self.attack_types = [
             {"name": "Arrow Shot", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Power Arrow", "power": self.attack_power * 2, "range": self.attack_range-1}  # Spécial, portée réduite à 2 cases
@@ -173,10 +172,10 @@ class Archer(Unit):
         new_x_2, new_y_2 = self.x + dx * 2, self.y + dy * 2
 
         # Vérifie si la première case est libre
-        if 0 <= new_x_1 < GRID_SIZE and 0 <= new_y_1 < GRID_SIZE:
+        if 0 <= new_x_1 < self.grid_size and 0 <= new_y_1 < self.grid_size:
             if self.grid[new_y_1][new_x_1] not in ["mur", "arbre", "mer"]:  # Case libre
                 # Si la deuxième case est libre, déplace l'unité
-                if 0 <= new_x_2 < GRID_SIZE and 0 <= new_y_2 < GRID_SIZE:
+                if 0 <= new_x_2 < self.grid_size and 0 <= new_y_2 < self.grid_size:
                     if self.grid[new_y_2][new_x_2] not in ["mur", "arbre", "mer"]:
                         self.x, self.y = new_x_2, new_y_2
                     else:
@@ -198,16 +197,16 @@ class Archer(Unit):
 
                     # Vérifier la première case intermédiaire
                     if (
-                        0 <= nx1 < GRID_SIZE and
-                        0 <= ny1 < GRID_SIZE and
+                        0 <= nx1 < self.grid_size and
+                        0 <= ny1 < self.grid_size and
                         self.grid[ny1][nx1] not in ["mur", "arbre", "mer"]
                     ):
                         new_cells.add((nx1, ny1))  # Ajouter la case intermédiaire si valide
 
                         # Vérifier la deuxième case finale
                         if (
-                            0 <= nx2 < GRID_SIZE and
-                            0 <= ny2 < GRID_SIZE and
+                            0 <= nx2 < self.grid_size and
+                            0 <= ny2 < self.grid_size and
                             self.grid[ny2][nx2] not in ["mur", "arbre", "mer"]
                         ):
                             new_cells.add((nx2, ny2))  # Ajouter la case finale si valide
@@ -229,30 +228,23 @@ class Archer(Unit):
         for dx, dy in directions:
             for step in range(2, attack_range + 1):
                 new_x, new_y = self.x + dx * step, self.y + dy * step
-                if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size:
                     cells.append((new_x, new_y))
 
         return cells
            
 class Swordsman(Unit):
-    def __init__(self, x, y, team, grid):
+    def __init__(self, x, y, team, grid, grid_size):
         """
         Crée un épeiste avec 2 attaques de portées et puissances différentes.
         """
         image = pygame.image.load("images/swordsman.png").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-        super().__init__(x, y, health=10, attack_power=3, team=team, grid=grid, movement_speed=3, attack_range=1,defense=2, image=image)
+        super().__init__(x, y, health=10, attack_power=3, team=team, grid=grid, grid_size=grid_size, movement_speed=3, attack_range=1, image=image)
         self.attack_types = [
             {"name": "Sword Slash", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Heavy Strike", "power": self.attack_power * 2, "range": self.attack_range}  # Puissant mais petite portée
         ]
-        
-    def move(self, dx, dy):
-        """Déplace l'unité dans une direction cardinale si possible."""
-        new_x, new_y = self.x + dx, self.y + dy
-        if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
-            if self.grid[new_y][new_x] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
-                self.x, self.y = new_x, new_y
     
         
     def get_attackable_cells(self,attack_type=0):
@@ -266,19 +258,19 @@ class Swordsman(Unit):
         for dx, dy in directions:
             for step in range(1, attack_range + 1):
                 new_x, new_y = self.x + dx * step, self.y + dy * step
-                if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size :
                     cells.append((new_x, new_y))
  
         return cells
 
 class Wizard (Unit):
-    def __init__(self, x, y, team, grid):
+    def __init__(self, x, y, team, grid,grid_size):
        """
        Crée un sorcier capable d'attaquer à un portée circulaire de 2 cases et de marcher sur l'eau.
        """
        image = pygame.image.load("images/wizard.png").convert_alpha()  # Charge l'image
        image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-       super().__init__(x, y, health=12, attack_power=4, team=team, grid=grid,movement_speed=3, attack_range=2,defense=2, image=image)
+       super().__init__(x, y, health=12, attack_power=4, team=team, grid=grid,  grid_size=grid_size, movement_speed=3, attack_range=2, image=image)
        
        # Attaques
        self.attack_types = [
@@ -290,7 +282,7 @@ class Wizard (Unit):
        """Déplace le magicien sur l'eau."""
        new_x = self.x + dx
        new_y = self.y + dy
-       if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+       if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size:
            if self.grid[new_y][new_x] not in ["mur", "arbre"]:
                self.x = new_x
                self.y = new_y
@@ -312,7 +304,7 @@ class Wizard (Unit):
         for dx in range(-attack_range, attack_range + 1):
             for dy in range(-attack_range, attack_range + 1):
                 new_x, new_y = self.x + dx, self.y + dy
-                if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size:
                     # Filtrer selon le type d'attaque 
                     if abs(dx) + abs(dy) <= attack_range:
                         cells.append((new_x, new_y))
@@ -320,13 +312,13 @@ class Wizard (Unit):
         return cells
 
 class Invincible(Unit):
-    def __init__(self, x, y, team, grid):
+    def __init__(self, x, y, team, grid, grid_size ):
             """
             Crée une unité invincible qui ne perd très peu de vie.
             """
             image = pygame.image.load("images/invincible.png").convert_alpha()  
             image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  
-            super().__init__(x, y, health=40, attack_power=4, team=team, grid=grid,movement_speed=3, attack_range=1,defense=3, image=image)
+            super().__init__(x, y, health=40, attack_power=4, team=team, grid=grid,  grid_size=grid_size, movement_speed=3, attack_range=1, image=image)
             
             # Attaque sur une portée 1 case en direction circulaire et 3 cases sur une direction
             self.attack_types = [
@@ -340,10 +332,10 @@ class Invincible(Unit):
         new_x_2, new_y_2 = self.x + dx * 2, self.y + dy * 2
 
         # Vérifie si la première case est libre
-        if 0 <= new_x_1 < GRID_SIZE and 0 <= new_y_1 < GRID_SIZE:
+        if 0 <= new_x_1 < self.grid_size and 0 <= new_y_1 < self.grid_size:
             if self.grid[new_y_1][new_x_1] not in ["mur", "arbre", "mer"]:  # Case libre
                 # Si la deuxième case est libre, déplace l'unité
-                if 0 <= new_x_2 < GRID_SIZE and 0 <= new_y_2 < GRID_SIZE:
+                if 0 <= new_x_2 < self.grid_size and 0 <= new_y_2 < self.grid_size:
                     if self.grid[new_y_2][new_x_2] not in ["mur", "arbre", "mer"]:
                         self.x, self.y = new_x_2, new_y_2
                     else:
@@ -365,16 +357,16 @@ class Invincible(Unit):
 
                     # Vérifier la première case intermédiaire
                     if (
-                        0 <= nx1 < GRID_SIZE and
-                        0 <= ny1 < GRID_SIZE and
+                        0 <= nx1 < self.grid_size and
+                        0 <= ny1 < self.grid_size and
                         self.grid[ny1][nx1] not in ["mur", "arbre", "mer"]
                     ):
                         new_cells.add((nx1, ny1))  # Ajouter la case intermédiaire si valide
 
                         # Vérifier la deuxième case finale
                         if (
-                            0 <= nx2 < GRID_SIZE and
-                            0 <= ny2 < GRID_SIZE and
+                            0 <= nx2 < self.grid_size and
+                            0 <= ny2 < self.grid_size and
                             self.grid[ny2][nx2] not in ["mur", "arbre", "mer"]
                         ):
                             new_cells.add((nx2, ny2))  # Ajouter la case finale si valide
@@ -397,19 +389,19 @@ class Invincible(Unit):
 
             for dx, dy in directions:
                     new_x, new_y = self.x + dx, self.y + dy
-                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                    if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size:
                         cells.append((new_x, new_y))
 
             return cells
 
 class Bomber(Unit):
-    def __init__(self, x, y, team, grid):
+    def __init__(self, x, y, team, grid, grid_size):
             """
             Crée une unité bombardier qui lance des bombes.
             """
             image = pygame.image.load("images/bomber.png").convert_alpha()  
             image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  
-            super().__init__(x, y, health=15, attack_power=5, team=team, grid=grid,movement_speed=3, attack_range=3,defense=2, image=image)
+            super().__init__(x, y, health=15, attack_power=5, team=team, grid=grid, grid_size=grid_size, movement_speed=3, attack_range=3, image=image)
             
             # Attaque sur une portée 5 cases dispersée
             self.attack_types = [
@@ -421,7 +413,7 @@ class Bomber(Unit):
         # Vérifier les limites et le type de terrain
         """Déplace l'unité dans une direction cardinale si possible."""
         new_x, new_y = self.x + dx, self.y + dy
-        if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+        if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size:
             if self.grid[new_y][new_x] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
                 self.x, self.y = new_x, new_y
 
@@ -439,7 +431,7 @@ class Bomber(Unit):
                 distance = abs(dx) + abs(dy)
                 if min_distance <= distance <= attack_range:  # Garder les cases éloignées
                     new_x, new_y = self.x + dx, self.y + dy
-                    if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+                    if 0 <= new_x < self.grid_size and 0 <= new_y < self.grid_size:
                         cells.append((new_x, new_y))
 
         return cells
