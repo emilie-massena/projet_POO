@@ -3,8 +3,6 @@ import random
 
 from abc import ABC, abstractmethod
 
-# Push Emi 13/12 22h45
-
 # Constantes
 GRID_SIZE = 17
 CELL_SIZE = 45
@@ -49,7 +47,7 @@ class Unit(ABC):
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, health, attack_power, team, grid, attack_range=1, image=None):
+    def __init__(self, x, y, health, attack_power, team, grid, movement_speed=3, attack_range=1, image=None):
         """
         Construit une unité avec une position, une santé, une puissance d'attaque et une équipe.
 
@@ -80,6 +78,7 @@ class Unit(ABC):
             {"name": "Special Attack", "power": self.attack_power, "range": self.attack_range}
             ]
         self.image = image  # Image associée à l'unité
+        self.movement_speed=movement_speed
         
     def move(self, dx, dy):
         """Déplace l'unité de dx, dy."""
@@ -147,12 +146,30 @@ class Archer(Unit):
         """
         image = pygame.image.load("images/archer.png").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, attack_range=3, image=image)
+        super().__init__(x, y, health=15, attack_power=2, team=team, grid=grid, movement_speed=3, attack_range=3, image=image)
         self.attack_types = [
             {"name": "Arrow Shot", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Power Arrow", "power": self.attack_power * 2, "range": self.attack_range-1}  # Spécial, portée réduite à 2 cases
         ]      
 
+    def move(self, dx, dy):
+        # Vérifie si la première case est libre
+        new_x_1, new_y_1 = self.x + dx, self.y + dy
+        new_x_2, new_y_2 = self.x + dx * 2, self.y + dy * 2
+
+        # Vérifie si la première case est libre
+        if 0 <= new_x_1 < GRID_SIZE and 0 <= new_y_1 < GRID_SIZE:
+            if self.grid[new_y_1][new_x_1] not in ["mur", "arbre", "mer"]:  # Case libre
+                # Si la deuxième case est libre, déplace l'unité
+                if 0 <= new_x_2 < GRID_SIZE and 0 <= new_y_2 < GRID_SIZE:
+                    if self.grid[new_y_2][new_x_2] not in ["mur", "arbre", "mer"]:
+                        self.x, self.y = new_x_2, new_y_2
+                    else:
+                        self.x, self.y = new_x_1, new_y_1  # S'arrête à la première case
+                else:
+                    self.x, self.y = new_x_1, new_y_1  # S'arrête à la première case
+        
+   
     def get_attackable_cells(self,attack_type=0):
         """
         Retourne une liste des cases en direction cardinale.
@@ -177,17 +194,24 @@ class Swordsman(Unit):
         """
         image = pygame.image.load("images/swordsman.png").convert_alpha()  # Charge l'image
         image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-        super().__init__(x, y, health=10, attack_power=3, team=team, grid=grid, attack_range=1, image=image)
+        super().__init__(x, y, health=10, attack_power=3, team=team, grid=grid, movement_speed=3, attack_range=1, image=image)
         self.attack_types = [
             {"name": "Sword Slash", "power": self.attack_power, "range": self.attack_range}, # Attaque normale
             {"name": "Heavy Strike", "power": self.attack_power * 2, "range": self.attack_range}  # Puissant mais petite portée
         ]
         
+    def move(self, dx, dy):
+        """Déplace l'unité dans une direction cardinale si possible."""
+        new_x, new_y = self.x + dx, self.y + dy
+        if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+            if self.grid[new_y][new_x] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
+                self.x, self.y = new_x, new_y
+    
+        
     def get_attackable_cells(self,attack_type=0):
         """
         Retourne une liste des cases en direction cardinale.
         """
-    
         cells = []
         attack_range = self.attack_types[attack_type]["range"]
         directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]  # Cardinal directions
@@ -197,7 +221,7 @@ class Swordsman(Unit):
                 new_x, new_y = self.x + dx * step, self.y + dy * step
                 if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
                     cells.append((new_x, new_y))
-
+ 
         return cells
 
 class Wizard (Unit):
@@ -207,7 +231,7 @@ class Wizard (Unit):
        """
        image = pygame.image.load("images/wizard.png").convert_alpha()  # Charge l'image
        image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  # Ajuste à la taille de la case
-       super().__init__(x, y, health=12, attack_power=4, team=team, grid=grid, attack_range=2, image=image)
+       super().__init__(x, y, health=12, attack_power=4, team=team, grid=grid,movement_speed=3, attack_range=2, image=image)
        
        # Attaques
        self.attack_types = [
@@ -255,13 +279,30 @@ class Invincible(Unit):
             """
             image = pygame.image.load("images/invincible.png").convert_alpha()  
             image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  
-            super().__init__(x, y, health=40, attack_power=4, team=team, grid=grid, attack_range=1, image=image)
+            super().__init__(x, y, health=40, attack_power=4, team=team, grid=grid,movement_speed=3, attack_range=1, image=image)
             
             # Attaque sur une portée 1 case en direction circulaire et 3 cases sur une direction
             self.attack_types = [
                 {"name": "Big Slash", "power": self.attack_power, "range": self.attack_range},  # Attaque circulaire 1 case
-                {"name": "Two Blades Style", "power": self.attack_power*0.5, "range": self.attack_range*2} # Attaque circulaire 2 cases
+                {"name": "Two Blades Style", "power": self.attack_power*1.5, "range": self.attack_range*2} # Attaque circulaire 2 cases
             ]
+    
+    def move(self, dx, dy):
+        # Vérifie si la première case est libre
+        new_x_1, new_y_1 = self.x + dx, self.y + dy
+        new_x_2, new_y_2 = self.x + dx * 2, self.y + dy * 2
+
+        # Vérifie si la première case est libre
+        if 0 <= new_x_1 < GRID_SIZE and 0 <= new_y_1 < GRID_SIZE:
+            if self.grid[new_y_1][new_x_1] not in ["mur", "arbre", "mer"]:  # Case libre
+                # Si la deuxième case est libre, déplace l'unité
+                if 0 <= new_x_2 < GRID_SIZE and 0 <= new_y_2 < GRID_SIZE:
+                    if self.grid[new_y_2][new_x_2] not in ["mur", "arbre", "mer"]:
+                        self.x, self.y = new_x_2, new_y_2
+                    else:
+                        self.x, self.y = new_x_1, new_y_1  # S'arrête à la première case
+                else:
+                    self.x, self.y = new_x_1, new_y_1  # S'arrête à la première case
             
     def get_attackable_cells(self,attack_type=0):
             """
@@ -288,13 +329,22 @@ class Bomber(Unit):
             """
             image = pygame.image.load("images/bomber.png").convert_alpha()  
             image = pygame.transform.scale(image, (CELL_SIZE-3, CELL_SIZE-3))  
-            super().__init__(x, y, health=15, attack_power=5, team=team, grid=grid, attack_range=3, image=image)
+            super().__init__(x, y, health=15, attack_power=5, team=team, grid=grid,movement_speed=3, attack_range=3, image=image)
             
             # Attaque sur une portée 5 cases dispersée
             self.attack_types = [
                 {"name": "Aqua Bomb", "power": self.attack_power, "range": self.attack_range}, 
                 {"name": "Lava bomb", "power": self.attack_power*1.5, "range": self.attack_range*2} 
             ]
+    def move(self, dx, dy):
+        """Déplace l'unité de dx, dy."""
+        # Vérifier les limites et le type de terrain
+        """Déplace l'unité dans une direction cardinale si possible."""
+        new_x, new_y = self.x + dx, self.y + dy
+        if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+            if self.grid[new_y][new_x] not in ["mur", "arbre", "mer"]:  # Éviter les obstacles
+                self.x, self.y = new_x, new_y
+
 
     def get_attackable_cells(self,attack_type=0):
         """

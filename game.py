@@ -1,7 +1,6 @@
 import pygame
 import random
-# Push Emi 13/12 22h42
-
+ 
 from unit import *
 
 # Définir les constantes
@@ -292,7 +291,7 @@ class Game:
             "- Le 1er joueur 'player' et le 2ème joueur 'enemy' possèdent chacun son équipe d'unités.",
             "- Pour finir un tour, il faut utiliser toutes les unités de son équipe soit en jouant l'unité soit en sautant le tour de l'unité.",
             "- ATTENTION : Il faudra obligatoirement valider sa position avec 'ESPACE' avant d'attaquer, sauter son tour ou encore quitter le jeu.",
-            "- Les instructions et directives correspondant à chaque unité sera rappeler sur la fenêtre d'informations lors du jeu.",
+            "- Les instructions et directives correspondant à chaque unité seront rappelés sur la fenêtre d'informations lors du jeu.",
             "--> L'objectif est d'éliminer toutes les unités de l'équipe adversaire",
             " ",
             "BONNE CHANCE !",
@@ -340,16 +339,16 @@ class Game:
         for selected_unit in self.player_units:
 
             # Tant que l'unité n'a pas terminé son tour
-            #has_acted = False
             selected_unit.is_selected = True
             self.flip_display()
                 
             selected_attack_type = None # Variable qui mémorise le type d'attaque choisi
             has_validated_position = False
             has_attacked = False
+            remaining_moves = selected_unit.movement_speed
             
-           
-            while not has_validated_position:
+            #while not has_validated_position:
+            while remaining_moves > 0:
                 self.flip_display()
                 for event in pygame.event.get():
 
@@ -357,7 +356,7 @@ class Game:
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         exit()
-
+                    
                     # Gestion des touches du clavier
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_e:  # Touche 'E' pour quitter le jeu
@@ -374,8 +373,16 @@ class Game:
                             dy = -1
                         elif event.key == pygame.K_DOWN:
                             dy = 1
+                            
+                        if dx != 0 or dy != 0:
+                            selected_unit.move(dx, dy)
+                            remaining_moves -= 1
+                            print(f"Déplacements restants : {remaining_moves}")
 
-                        selected_unit.move(dx, dy)
+                        if event.key == pygame.K_SPACE:
+                            remaining_moves = 0    
+                        
+                        #selected_unit.move(dx, dy)
                         self.flip_display()
                         
                         # Valider la position avec "Espace"
@@ -444,16 +451,16 @@ class Game:
         for selected_unit in self.enemy_units:
 
             # Tant que l'unité n'a pas terminé son tour
-            #has_acted = False
             selected_unit.is_selected = True
             self.flip_display()
             
             selected_attack_type = None # Variable qui mémorise le type d'attaque choisi
             has_validated_position = False
             has_attacked = False
-            
+            remaining_moves = selected_unit.movement_speed
            
-            while not has_validated_position:
+            #while not has_validated_position:
+            while remaining_moves > 0:   
                 self.flip_display()
                 for event in pygame.event.get():
 
@@ -478,8 +485,17 @@ class Game:
                             dy = -1
                         elif event.key == pygame.K_DOWN:
                             dy = 1
-
-                        selected_unit.move(dx, dy)
+                        
+                        # Déplace l'unité et réduit le nombre de déplacements restants
+                        if dx != 0 or dy != 0:
+                            selected_unit.move(dx, dy)
+                            remaining_moves -= 1
+                            print(f"Déplacements restants : {remaining_moves}")
+                        
+                        if event.key == pygame.K_SPACE:
+                            remaining_moves = 0    
+                        
+                        #selected_unit.move(dx, dy)
                         self.flip_display()
                         
                         # Valider la position avec "Espace"
@@ -586,10 +602,11 @@ class Game:
                 overlay = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
                 overlay.fill(special_color)  # Foncée pour attaque spéciale
                 self.screen.blit(overlay, (x * TILE_SIZE, y * TILE_SIZE))
-        
+               
         # Affiche le panneau d'information (partie noire à droite)
         panel_rect = pygame.Rect(SCREEN_WIDTH, 0, 16 * TILE_SIZE, SCREEN_HEIGHT)
         pygame.draw.rect(self.screen, (30, 30, 30), panel_rect)  # Fond du panneau en gris foncé
+   
         
         # Si une unité est sélectionnée, affiche ses types d'attaques
         for unit in self.player_units + self.enemy_units:
